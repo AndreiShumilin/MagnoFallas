@@ -1,0 +1,12 @@
+name: MagnoFallas
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - numpy>=1.23,<2.0
+  - scipy
+  - numba
+  - matplotlib
+  - termcolor
+  - tqdm
+  - pip

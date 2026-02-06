@@ -1,0 +1,195 @@
+# MagnoFallas - A Python-based method for annihilating magnons
+# Copyright (C) 2025-2026  Andrei Shumilin
+#
+# e-mail: andrei.shumilin@uv.es, hegnyshu@gmail.com
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+
+
+r""" A strategy that assumes that each type of exchange interactions depends only on the distance between corresponding atoms
+"""
+
+import numpy as np
+import numpy.linalg
+import scipy as sp
+import numbers
+
+import numba as nb
+from numba.experimental import jitclass
+
+import MagnoFallas.OldRadtools as rad
+from MagnoFallas.SpinPhonon import SPhUtil as sphut
+
+
+
+
+def Estimate_auto_dist(SH0, pos0, SHlist, Poslist, mag_correspond_list, lst=None, PCCmin=0.45, disMax = 5):
+    r"""
+    Estimates the spin-phonon interaction based on the set of spin Hamiltonians with finite displacements
+    SH0 - initial (non-perturbed) spin Hamiltonian
+    pos0 - relaxed positions of the the magnetic atoms
+    SHlist - lisr of spin Hamiltonians
+    Poslist - list of positions
+    mag_correspond_list - correspondence between atom enumerations from spin Hamiltonian and phonopy
+    """
+    l_i1, l_i2, l_cvec = formLists(SH0, pos0, disMax = disMax)
+    HlineLst = Estimate_bonds_dist_Hamiltonians(l_i1, l_i2, l_cvec, SH0, pos0, SHlist, Poslist, 
+                                     mag_correspond_list, lst=lst, PCCmin=PCCmin)
+    #HlineLst = Estimate_bonds_dist(l_i1, l_i2, l_cvec, dir0, dirlist, mag_correspond_list, fil = fil, lst=lst, sp0=sp0, PCCmin=PCCmin)
+    return HlineLst
+
+
+
+#### base function: determine the exchange interaction based on spin hamiltonian and distances
+#### and than calculate the dJ/dr lines of spin-displacement Hamiltonian
+def Estimate_auto_dist_Read(SH0, pos0, dirlist, mag_correspond_list, fil = 'exchange.out', lst=None, sp0=3/2, PCCmin=0.45, disMax = 5,
+                           SvectorsList=None):
+    l_i1, l_i2, l_cvec = formLists(SH0, pos0, disMax = disMax)
+    Ndisp = len(dirlist)
+    SHlist = []
+    Poslist = []
+    for idi in range(Ndisp):
+        d = dirlist[idi]
+        SH, pos = sphut.SHreadTB2J(d + fil, sp0=sp0)
+        if not SvectorsList is None:
+            for iat,at in enumerate(SH.magnetic_atoms):
+                at.spin_vector = SvectorsList[iat]
+        SHlist.append(SH)
+        Poslist.append(pos)
+    HlineLst = Estimate_bonds_dist_Hamiltonians(l_i1, l_i2, l_cvec, SH0, pos0, SHlist, Poslist, 
+                                     mag_correspond_list, lst=lst, PCCmin=PCCmin)
+    #HlineLst = Estimate_bonds_dist(l_i1, l_i2, l_cvec, dir0, dirlist, mag_correspond_list, fil = fil, lst=lst, sp0=sp0, PCCmin=PCCmin)
+    return HlineLst
+
+
+###### calculate the lists l_i1, l_i2, l_cvec from spin Hamiltonian and real positions 
+###### with the maximum distance equal to disMax
+def formLists(SH0, pos, disMax = 5):
+    l_i1 = []
+    l_i2 = []
+    l_cvec = []
+    numD = {}
+    for iat, at in enumerate(SH0.magnetic_atoms):
+        numD[at.name] = iat
+    for at1,at2, cvec, Jint in SH0:
+        i1 = numD[at1.name]
+        i2 = numD[at2.name]
+        vec = cvec[0]*SH0.a1 + cvec[1]*SH0.a2 + cvec[2]*SH0.a3
+        vec += pos[i2]-pos[i1]
+        dis = np.linalg.norm(vec)
+        if dis < disMax:
+            l_i1.append(i1)
+            l_i2.append(i2)
+            l_cvec.append(cvec)
+    return l_i1, l_i2, l_cvec
+
+
+
+
+
+
+
+
+
+
+
+
+def Estimate_bonds_dist_Hamiltonians(l_i1, l_i2, l_cvecJ, SH0, pos0, SHlist, Poslist, 
+                                     mag_correspond_list, lst=None, PCCmin=0.45):
+    ###    l_i1, l_i2, l_cvecJ : lists describing bonds to study i1,i2 - numbers in magnetic_atoms, cvec - distance in unit cells
+    ###    dir0 - directory of the unperturbed Hamiltonian
+    ###    dirlist - listy of folders with results to be used
+    ###    mag_correspond_lis - correspondence list between magnetic_atoms and results of phonopy
+    ###    fil - name of output files of TB2J (should always be the same)
+    ###    lst - list of already calculated terms (usually should be left "None")
+    ###    sp0 - spins of magnetic atoms (single value or list)
+    ###    PCCmin - minimum value of the correlation criterium  (between 0 and 1) to accept the estimated linear dependence
+    
+    if lst==None:
+        lst = sphut.EmptydJList()
+
+    #preliminary calculations with zero-Hamiltonian
+    Ncalc = len(l_i1)
+    Nham = len(SHlist)
+    #Ndir = len(dirlist)
+    
+    mat0 = SH0.magnetic_atoms
+    J0matr = [SH0[mat0[l_i1[i]],mat0[l_i2[i]], l_cvecJ[i]].matrix  for i in range(Ncalc)   ]
+    evec0 = np.zeros((Ncalc,3))
+    vecs0 = np.zeros((Ncalc,3))
+    for i in range(Ncalc):
+        po0 = pos0[l_i1[i]]
+        po1 = pos0[l_i2[i]]
+        cvec = l_cvecJ[i]
+        vec = cvec[0]*SH0.a1 + cvec[1]*SH0.a2 + cvec[2]*SH0.a3
+        vec += po1-po0
+        vecs0[i] = vec
+        vecN = vec / np.linalg.norm(vec)
+        evec0[i] = vecN
+
+    dJmatr = [[] for i in range(Ncalc)]
+    d_dis = np.zeros((Ncalc,Nham))
+
+    
+    #### collect the displaced Hamiltonians
+    for idi in range(Nham):
+        SH = SHlist[idi] 
+        pos = Poslist[idi]
+        mat = SH.magnetic_atoms
+        for i in range(Ncalc):
+            Jm1 = SH[mat[l_i1[i]],mat[l_i2[i]], l_cvecJ[i]].matrix
+            dJm = Jm1 - J0matr[i]
+            dJmatr[i].append(dJm)
+            
+            po0 = pos[l_i1[i]]
+            po1 = pos[l_i2[i]]
+            cvec = l_cvecJ[i]
+            vec = cvec[0]*SH.a1 + cvec[1]*SH.a2 + cvec[2]*SH.a3
+            vec += po1-po0
+            vec -= vecs0[i]
+            ddist = vec@evec0[i]
+            d_dis[i,idi] = ddist
+            
+    #linear regression
+    JlinM = np.zeros((Ncalc, 3, 3 ))
+    dJmatr = np.array(dJmatr)
+    for ica in range(Ncalc):
+        arX = d_dis[ica]
+        arY0 = dJmatr[ica]
+        for i1 in range(3):
+            for i2 in range(3):
+                arY = arY0[...,i1,i2]
+                regres = sp.stats.linregress(arX, arY)
+                pcc = regres.rvalue
+                if np.abs(pcc) > PCCmin:
+                    JlinM[ica,i1,i2] = regres.slope    
+
+    cvec0 = np.array((0,0,0), dtype = np.int32)
+    for ica in range(Ncalc):
+        i1 = l_i1[ica]
+        i2 = l_i2[ica]
+        n1 = mag_correspond_list[i1]
+        n2 = mag_correspond_list[i2]
+        J1 = JlinM[ica].copy()
+        J1 = J1.astype(complex)
+        cvec = l_cvecJ[ica]
+        dJline1 = sphut.TderivJ(i1,i2, np.array(cvec), n2, evec0[ica].copy(), np.array(cvec), J1)
+        dJline2 = sphut.TderivJ(i1,i2, np.array(cvec), n1, evec0[ica].copy(), np.array(cvec0), -J1)
+        lst.append(dJline1)
+        lst.append(dJline2)
+        
+    return lst
+

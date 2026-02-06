@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "MagnoFallas"
+version = "0.0.1"
+description = "A Python-based method for annihilating magnons"
+requires-python = ">=3.9"
+
+dependencies = [
+    "numpy",
+    "scipy",
+    "numba",
+    "matplotlib",
+    "termcolor",
+    "tqdm"
+    
+]
+
+
+[project.optional-dependencies]
+phonopy = ["phonopy>=2.0"]
+
+
+[tool.setuptools.packages.find]
+where = ["Src"]
