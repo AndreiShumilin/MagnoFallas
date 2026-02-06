@@ -1,5 +1,5 @@
 *********
-Magno-Fallas
+# Magno-Fallas
 *********
 
 The code is designed to calculate Gilbert and non-Gilbert damping in magnetic insulators from ab initio–derived spin Hamiltonians. The calculations are made within Boltzmann approximation. Some parts of the calculations use JIT compilation provided my numba library. 
@@ -27,15 +27,14 @@ Some parts of the code (mostly the interface with TB2J and non-numba version of 
 Currently the code should be used as a Python library. The examples section provide explained examples of the representative calculations made with the code. 
 
 
-*********
-Physical background
-*********
+
+### Physical background
+
 
 The pysical background can be found in *Archive*
 
-*********
-Dependencies
-*********
+
+### Dependencies
 
 The following python libraries are required:
 
@@ -52,9 +51,9 @@ pip install phonopy
 
 Please visit: https://phonopy.github.io/phonopy/install.html  for further information. 
 
-*********
-Installation
-*********
+
+### Installation
+
 
 First, download the code from github. 
 
@@ -80,17 +79,17 @@ jupyter notebook<br>
 
 
 
-*********
-Getting started
-*********
+### Getting started
+
 
 We recomend to start by running the provided tutorials and reading comments.
 
 At the current stage the project does not contain a detailed manual, so, please contact the author directly for the guidance. 
 
+
 *********
-Contacts
-*********
+## Contacts
+
 Andrei Shumilin  <br>
 email: andrei.shumilin@uv.es
 
