@@ -1,5 +1,5 @@
 *********
-![Valencia MagnoFallas]([images/Fallas2.png](https://github.com/AndreiShumilin/MagnoFallas/blob/main/Fallas-3.png))
+<img width="5122" height="903" alt="Fallas-3" src="https://github.com/user-attachments/assets/2e9173fb-de53-4655-872e-30ab616b8422" />
 *********
 
 The code is designed to calculate Gilbert and non-Gilbert damping in magnetic insulators from ab initio–derived spin Hamiltonians. The calculations are made within Boltzmann approximation. Some parts of the calculations use JIT compilation provided my numba library. 
