@@ -61,11 +61,11 @@ class TderivJ(object):
     def __init__(self, i1, i2, cvecJ, n, edis, cvecN, dJ):
         self.i1 = i1
         self.i2 = i2
-        self.cvecJ = cvecJ
+        self.cvecJ = np.asarray(cvecJ, dtype=np.int32)
         self.n = n
-        self.edis = edis
-        self.cvecN = cvecN
-        self.dJ = dJ
+        self.edis = np.asarray(edis, dtype=np.float64)
+        self.cvecN = np.asarray(cvecN, dtype=np.int32)
+        self.dJ = np.asarray(dJ, dtype=np.complex128)
 
 def EmptydJList():
     i1 = 0 ; i2 = 0
