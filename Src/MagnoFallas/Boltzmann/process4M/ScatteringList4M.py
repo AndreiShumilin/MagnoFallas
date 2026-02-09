@@ -114,7 +114,7 @@ class Tscat(object):
         self.Status = 0
 
 def EmptyScatList():
-    k = np.array((1.0,0.0,0.0))
+    k = np.array((1.0,0.0,0.0), dtype=np.float64)
     kCorn = np.array( (k,k,k,k) )
     sc1 = Tscat(k, 1, k, 1, kCorn, 1, 1, k, rolesMC, 2)
     lis = nb.typed.List()
