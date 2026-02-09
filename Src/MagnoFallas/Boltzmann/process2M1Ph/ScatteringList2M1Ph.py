@@ -113,7 +113,7 @@ def EmptyScatList2M1Ph():
     r"""
     creates empty scattering list for 2M1Ph scatterings
     """
-    k = np.array((1.0,0.0,0.0))
+    k = np.array((1.0,0.0,0.0), dtype=np.float64)
     kCorn = np.array( (k,k,k,k) )
     sc1 = Tscat2M1Ph(k, 1, kCorn, 1, 1)
     lis = nb.typed.List()
@@ -288,7 +288,7 @@ def findCenter2M1Ph(Scat, pSH, Ephon):
         Scat.e1=prad.omega(pSH, k1real)[0][Scat.lk1]
         Scat.ePh= Ephon.energy(qreal, Scat.qBra)    #prad.omega(pSH, k2real)[0][Scat.lk2]
     else:
-        k1real = np.array((0.0,0.0,0.0))
+        k1real = np.array((0.0,0.0,0.0), dtype=np.float64)
         Scat.k1real = k1real.copy()
         Scat.qreal = k1real.copy()
         print('Ahtung: scattering is not there!')
