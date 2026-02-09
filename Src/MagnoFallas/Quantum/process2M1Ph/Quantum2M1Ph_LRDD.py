@@ -60,17 +60,17 @@ Tline2M1Ph_lst = [       ### 2 magnon 1 phonon
 @jitclass(Tline2M1Ph_lst)
 class Tline2M1PhLR(object):
     def __init__(self, A,r,nu, Rph, edis, R0, dim, R1T=eye1c, R2=eye1c):
-        self.A = A
-        self.r = r
-        self.nu = nu
+        self.A = np.asarray(A, dtype=np.complex128)
+        self.r = np.asarray(r, dtype=np.float64)
+        self.nu = np.asarray(nu, dtype=np.int32)
         self.Rph = Rph
-        self.edis = edis
+        self.edis = np.asarray(edis, dtype=np.float64)
 
         self.R0 = R0
         self.dim = dim
 
-        self.R1T = R1T
-        self.R2 = R2
+        self.R1T = np.asarray(R1T, dtype=np.complex128)
+        self.R2 = np.asarray(R2, dtype=np.complex128)
 
 def lineMelDD(line, kx2, lamx2, Gix2, NMat, ph_q, ph_Om, ph_EdAll, ph_masses, roles, Vuc ):
 

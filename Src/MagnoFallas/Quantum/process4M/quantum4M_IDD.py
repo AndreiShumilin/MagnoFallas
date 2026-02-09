@@ -64,8 +64,8 @@ class TIDDbond(object):
         self.R0 = R0
         self.dim = dim
 
-        self.R1T = R1T
-        self.R2 =  R2
+        self.R1T = np.asarray(R1T, dtype=np.complex128)
+        self.R2 =  np.asarray(R2, dtype=np.complex128)
 
         prefactor = g1*g2 * 0.5 / Vuc   #### 0.5 is due to the double conting     
         if inverse:                      #### most of the Hamiltonians, including dipole-dipole are written with positive ferromagnetic energies

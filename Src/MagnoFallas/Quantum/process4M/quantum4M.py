@@ -57,8 +57,8 @@ Tbond_lst = [
 @jitclass(Tbond_lst)
 class Tbond(object):
     def __init__(self, r1,r2,ty1,ty2, J0, S1=3/2, S2=3/2, Nat=2, inverse=True):
-        self.r1 = r1
-        self.r2 = r2
+        self.r1 = np.asarray(r1, dtype=np.float64)
+        self.r2 = np.asarray(r2, dtype=np.float64)
         self.ty1 = ty1
         self.ty2 = ty2
         ##### usually we deal in the notations where FM interaction is positive
@@ -69,7 +69,7 @@ class Tbond(object):
         else:
             J = J0
         
-        self.Jmat = J
+        self.Jmat = np.asarray(J, dtype=np.float64)
 
         Nlines = 9
         self.Nlines = Nlines

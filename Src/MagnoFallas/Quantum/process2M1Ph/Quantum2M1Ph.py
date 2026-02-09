@@ -55,11 +55,11 @@ Tline2M1Ph_lst = [       ### 2 magnon 1 phonon
 class Tline2M1Ph(object):
     def __init__(self, A,r,nu, jdis, Rdis, edis):
         self.A = A
-        self.r = r
-        self.nu = nu
+        self.r = np.asarray(r, dtype=np.float64)
+        self.nu = np.asarray(nu, dtype=np.int32)
         self.jdis = jdis
-        self.Rdis = Rdis
-        self.edis = edis
+        self.Rdis = np.asarray(Rdis, dtype=np.float64)
+        self.edis = np.asarray(edis, dtype=np.float64)
 
 
 def Empty2M1PhLineList():
