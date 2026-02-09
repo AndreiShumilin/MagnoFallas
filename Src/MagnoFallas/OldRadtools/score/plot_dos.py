@@ -35,7 +35,7 @@ from MagnoFallas.OldRadtools.dos.pdos_plotting import (
     plot_custom_pdos,
     plot_orbital_resolved,
 )
-from MagnoFallas.OldRadtools.plotting import COLOURS
+from MagnoFallas.OldRadtools.dos.plotting import COLOURS
 
 
 def manager(
