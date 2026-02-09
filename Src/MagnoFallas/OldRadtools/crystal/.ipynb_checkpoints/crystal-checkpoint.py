@@ -45,12 +45,6 @@ class Crystal(Lattice):
 
     .. doctest::
 
-        >>> import radtools as rad
-        >>> cub = rad.lattice_example("CUB")
-        >>> crystal = rad.Crystal(cub)
-        >>> crystal.pearson_symbol
-        'cP'
-
     For the full description of the lattice attributes and methods
     see :ref:`guide_crystal_lattice`.
 

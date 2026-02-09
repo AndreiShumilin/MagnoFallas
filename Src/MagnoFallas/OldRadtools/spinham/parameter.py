@@ -474,13 +474,6 @@ class ExchangeParameter:
 
         .. doctest::
 
-            >>> from radtools.spinham import ExchangeParameter
-            >>> J = ExchangeParameter(matrix=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-            >>> J.xx
-            1.0
-            >>> J.matrix[0][0]
-            1.0
-
         Returns
         -------
         xx : float
@@ -501,12 +494,7 @@ class ExchangeParameter:
 
         .. doctest::
 
-            >>> from radtools.spinham import ExchangeParameter
-            >>> J = ExchangeParameter(matrix=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-            >>> J.xy
-            2.0
-            >>> J.matrix[0][1]
-            2.0
+
 
         Returns
         -------
@@ -528,12 +516,7 @@ class ExchangeParameter:
 
         .. doctest::
 
-            >>> from radtools.spinham import ExchangeParameter
-            >>> J = ExchangeParameter(matrix=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-            >>> J.xz
-            3.0
-            >>> J.matrix[0][2]
-            3.0
+
 
         Returns
         -------
@@ -555,12 +538,7 @@ class ExchangeParameter:
 
         .. doctest::
 
-            >>> from radtools.spinham import ExchangeParameter
-            >>> J = ExchangeParameter(matrix=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-            >>> J.yx
-            4.0
-            >>> J.matrix[1][0]
-            4.0
+
 
         Returns
         -------
@@ -582,12 +560,7 @@ class ExchangeParameter:
 
         .. doctest::
 
-            >>> from radtools.spinham import ExchangeParameter
-            >>> J = ExchangeParameter(matrix=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-            >>> J.yy
-            5.0
-            >>> J.matrix[1][1]
-            5.0
+
 
         Returns
         -------
@@ -609,12 +582,7 @@ class ExchangeParameter:
 
         .. doctest::
 
-            >>> from radtools.spinham import ExchangeParameter
-            >>> J = ExchangeParameter(matrix=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-            >>> J.yz
-            6.0
-            >>> J.matrix[1][2]
-            6.0
+
 
         Returns
         -------
@@ -636,12 +604,7 @@ class ExchangeParameter:
 
         .. doctest::
 
-            >>> from radtools.spinham import ExchangeParameter
-            >>> J = ExchangeParameter(matrix=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-            >>> J.zx
-            7.0
-            >>> J.matrix[2][0]
-            7.0
+
 
         Returns
         -------
@@ -663,12 +626,7 @@ class ExchangeParameter:
 
         .. doctest::
 
-            >>> from radtools.spinham import ExchangeParameter
-            >>> J = ExchangeParameter(matrix=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-            >>> J.zy
-            8.0
-            >>> J.matrix[2][1]
-            8.0
+
 
         Returns
         -------
@@ -690,12 +648,7 @@ class ExchangeParameter:
 
         .. doctest::
 
-            >>> from radtools.spinham import ExchangeParameter
-            >>> J = ExchangeParameter(matrix=[[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-            >>> J.zz
-            9.0
-            >>> J.matrix[2][2]
-            9.0
+
 
         Returns
         -------

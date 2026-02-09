@@ -54,10 +54,7 @@ Full documentation on the behaviour is available in the
 
     .. code-block:: python
 
-        from radtools import identify_wannier_centres
-        identify_wannier_centres("seedname_centres.xyz",
-            span = 0.2,
-            output_name="identified_centres")
+
 """
 
 from .extract_tb2j import manager as extract_tb2j

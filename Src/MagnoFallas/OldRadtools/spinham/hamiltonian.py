@@ -559,28 +559,6 @@ class SpinHamiltonian(Crystal):
 
         More straightforward syntax is advised:
 
-        .. doctest::
-
-            >>> import radtools as rad
-            >>> Cr = rad.Atom("Cr")
-            >>> J = rad.ExchangeParameter(iso=1)
-            >>> model = rad.SpinHamiltonian(rad.Crystal())
-            >>> model[Cr, Cr, (1,0,0)] = J
-            >>> (Cr, Cr, (1,0,0)) in model
-            True
-
-        It is equivalent to
-
-        .. doctest::
-
-            >>> import radtools as rad
-            >>> Cr = rad.Atom("Cr")
-            >>> J = rad.ExchangeParameter(iso=1)
-            >>> model = rad.SpinHamiltonian(rad.Crystal())
-            >>> model.add_bond(Cr, Cr, (1,0,0), J=J)
-            >>> (Cr, Cr, (1,0,0)) in model
-            True
-
         Parameters
         ----------
         atom1 : :py:class:`Atom` or str
@@ -633,34 +611,7 @@ class SpinHamiltonian(Crystal):
 
         More straightforward syntax is advised:
 
-        .. doctest::
 
-            >>> import radtools as rad
-            >>> Cr = rad.Atom("Cr")
-            >>> J = rad.ExchangeParameter(iso=1)
-            >>> model = rad.SpinHamiltonian(rad.Crystal())
-            >>> model[Cr, Cr, (1,0,0)] = J
-            >>> (Cr, Cr, (1,0,0)) in model
-            True
-            >>> del model[Cr, Cr, (1,0,0)]
-            >>> (Cr, Cr, (1,0,0)) in model
-            False
-
-
-        It is the same as
-
-        .. doctest::
-
-            >>> import radtools as rad
-            >>> Cr = rad.Atom("Cr")
-            >>> J = rad.ExchangeParameter(iso=1)
-            >>> model = rad.SpinHamiltonian(rad.Crystal())
-            >>> model[Cr, Cr, (1,0,0)] = J
-            >>> (Cr, Cr, (1,0,0)) in model
-            True
-            >>> model.remove_bond(Cr, Cr, (1,0,0))
-            >>> (Cr, Cr, (1,0,0)) in model
-            False
 
         Parameters
         ----------

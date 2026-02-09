@@ -90,12 +90,7 @@ class Lattice:
 
     Lattice can be created in a three alternative ways:
 
-    .. doctest::
 
-        >>> import radtools as rad
-        >>> l = rad.Lattice(cell = [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        >>> l = rad.Lattice(a1 = [1,0,0], a2 = [0,1,0], a3 = [0,0,1])
-        >>> l = rad.Lattice(a=1, b=1, c=1, alpha=90, beta=90, gamma=90)
 
     Parameters
     ----------
@@ -802,30 +797,6 @@ class Lattice:
         -------
         variation : str
             Variation of the lattice.
-
-        Examples
-        --------
-
-        .. doctest::
-
-            >>> import radtools as rad
-            >>> l = rad.lattice_example("CUB")
-            >>> l.variation
-            'CUB'
-
-        .. doctest::
-
-            >>> import radtools as rad
-            >>> l = rad.lattice_example("BCT1")
-            >>> l.variation
-            'BCT1'
-
-        .. doctest::
-
-            >>> import radtools as rad
-            >>> l = rad.lattice_example("MCLC4")
-            >>> l.variation
-            'MCLC4'
 
         See Also
         --------

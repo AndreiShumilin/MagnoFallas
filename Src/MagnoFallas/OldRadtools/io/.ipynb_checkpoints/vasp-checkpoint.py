@@ -244,7 +244,7 @@ def dump_poscar(
 
 
 if __name__ == "__main__":
-    from radtools import HEX, Crystal
+    from MagnoFallas.OldRadtools import HEX, Crystal
 
     c = Crystal(HEX(1, 2))
     c.add_atom("Cr2", position=[0.5, 0, 0])

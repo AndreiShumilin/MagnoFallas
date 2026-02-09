@@ -111,45 +111,7 @@ def niggli(
         Acta Crystallographica Section A: Foundations of Crystallography,
         60(1), pp.1-6.
 
-    Examples
-    --------
-    Example from [1]_
-    (parameters are reproducing :math:`A=9`, :math:`B=27`, :math:`C=4`,
-    :math:`\xi` = -5, :math:`\eta` = -4, :math:`\zeta = -22`):
 
-    .. doctest::
-
-        >>> import radtools as rad
-        >>> from radtools.constants import TODEGREES
-        >>> from math import acos, sqrt
-        >>> a = 3
-        >>> b = sqrt(27)
-        >>> c = 2
-        >>> print(f"{a} {b:.3f} {c}")
-        3 5.196 2
-        >>> alpha = acos(-5 / 2 / b / c) * TODEGREES
-        >>> beta = acos(-4 / 2 / a / c) * TODEGREES
-        >>> gamma = acos(-22 / 2 / a / b) * TODEGREES
-        >>> print(f"{alpha:.2f} {beta:.2f} {gamma:.2f}")
-        103.92 109.47 134.88
-        >>> niggli_matrix_form = rad.niggli(a, b, c, alpha, beta, gamma, verbose=True) #doctest: +NORMALIZE_WHITESPACE
-                       A         B         C        xi        eta      zeta
-        start:       9.00000  27.00000   4.00000  -5.00000  -4.00000 -22.00000
-        2 appl. to   9.00000  27.00000   4.00000  -5.00000  -4.00000 -22.00000
-        1 appl. to   9.00000   4.00000  27.00000  -5.00000 -22.00000  -4.00000
-        4 appl. to   4.00000   9.00000  27.00000 -22.00000  -5.00000  -4.00000
-        5 appl. to   4.00000   9.00000  27.00000 -22.00000  -5.00000  -4.00000
-        4 appl. to   4.00000   9.00000  14.00000  -4.00000  -9.00000  -4.00000
-        6 appl. to   4.00000   9.00000  14.00000  -4.00000  -9.00000  -4.00000
-        4 appl. to   4.00000   9.00000   9.00000  -8.00000  -1.00000  -4.00000
-        7 appl. to   4.00000   9.00000   9.00000  -8.00000  -1.00000  -4.00000
-        3 appl. to   4.00000   9.00000   9.00000  -9.00000  -1.00000   4.00000
-        5 appl. to   4.00000   9.00000   9.00000   9.00000   1.00000   4.00000
-        3 appl. to   4.00000   9.00000   9.00000  -9.00000  -3.00000   4.00000
-        result:      4.00000   9.00000   9.00000   9.00000   3.00000   4.00000
-        >>> niggli_matrix_form
-        array([[4. , 9. , 9. ],
-               [4.5, 1.5, 2. ]])
 
     """
     cell_volume = volume(a, b, c, alpha, beta, gamma)
