@@ -11,12 +11,6 @@ import matplotlib.pyplot as plt
 # importing the phonopy results
 import phonopy
 
-import os
-import sys
-script_dir = os.path.dirname(os.path.abspath('__file__'))
-project_root = os.path.abspath(os.path.join(script_dir, '..','Src'))  # adjust '..' depending where you are
-sys.path.insert(0, project_root)
-
 import MagnoFallas as mfal
 
 
