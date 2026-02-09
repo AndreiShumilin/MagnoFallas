@@ -120,18 +120,21 @@ def make_pSH(Magn, B=0.0, spinproj=None, LR=False, dim=2, SH=None, R0=0):
     Important!!!: avoid for Ferrimagnetic/AFM materials
                     Use make_pSH2 instaead
     """
+
+    
     Nat = Magn.N
-    Jij = np.array(Magn.J_matrices, dtype=np.complex128)
-    ai = np.array(Magn.indices_i)
-    aj = np.array(Magn.indices_j)
-    dij = np.array(Magn.dis_vectors)
-    S1 = Magn.S
-    u1 = Magn.u
-    v1 = Magn.v
-    signs = np.zeros(Nat)
+    Jij = np.asarray(Magn.J_matrices, dtype=np.complex128)
+    ai = np.asarray(Magn.indices_i, dtype=np.int32)
+    aj = np.asarray(Magn.indices_j, dtype=np.int32)
+    dij = np.asarray(Magn.dis_vectors, dtype=np.float64)
+    S1 = np.asarray(Magn.S, dtype=np.float64)
+    u1 = np.asarray(Magn.u, dtype=np.complex128)
+    v1 = np.asarray(Magn.v, dtype=np.complex128)
+    
+    signs = np.zeros(Nat, dtype=np.float64)
     if not (spinproj is None):
         for i in range(Nat):
-            signs[i] = np.sign(spinproj[i])
+            signs[i] = np.sign(spinproj[i], dtype=np.float64)
     else:
         signs += 1.0
 
@@ -165,16 +168,18 @@ def make_pSH2(SH, B=0.0, LR=False, dim=2, R0=0, stabField = Stabilizing_field_0)
     Note: to correctly use the LR dipole-dipole interaction, the short-range dipole-dipole interaction 
          must be already added to SH with the same cutoff distance R0
     """
+
+    
     SHferro = qut.make_FerroHam(SH)
     Magn = rad.MagnonDispersion(SHferro)
     Nat = Magn.N
-    Jij = np.array(Magn.J_matrices, dtype=np.complex128)
-    ai = np.array(Magn.indices_i)
-    aj = np.array(Magn.indices_j)
-    dij = np.array(Magn.dis_vectors)
-    S1 = Magn.S
-    u1 = Magn.u
-    v1 = Magn.v
+    Jij = np.asarray(Magn.J_matrices, dtype=np.complex128)
+    ai = np.asarray(Magn.indices_i, dtype=np.int32)
+    aj = np.asarray(Magn.indices_j, dtype=np.int32)
+    dij = np.asarray(Magn.dis_vectors, dtype=np.float64)
+    S1 = np.asarray(Magn.S, dtype=np.float64)
+    u1 = np.asarray(Magn.u, dtype=np.complex128)
+    v1 = np.asarray(Magn.v, dtype=np.complex128)
 
     av_spin = np.zeros(3)
     for at in SH.magnetic_atoms:
@@ -184,10 +189,10 @@ def make_pSH2(SH, B=0.0, LR=False, dim=2, R0=0, stabField = Stabilizing_field_0)
         av_spin = SH.magnetic_atoms[0].spin_vector
         ### it means that we deal with ideally compensated AFM
     
-    signs = np.zeros(Nat)
+    signs = np.zeros(Nat, dtype=np.float64)
     for i in range(Nat):
         sp1 = SH.magnetic_atoms[i].spin_vector
-        signs[i] = np.sign( sp1@av_spin  )
+        signs[i] = np.sign( sp1@av_spin, dtype=np.float64  )
     
     if LR:
         Vcell = ut2.cellVolume(SH.cell, regime2D=(dim==2))
