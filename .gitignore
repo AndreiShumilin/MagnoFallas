@@ -1,7 +1,11 @@
+build/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
+.pytest_cache
 *.py[codz]
 *$py.class
+*.egg-info
 
 # Jupyter Notebook
 .ipynb_checkpoints
