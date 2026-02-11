@@ -12,3 +12,7 @@ __pycache__/
 
 # Ignore tutorials for now
 Tutorials
+
+
+# A folder to run temporary projects
+TMP
