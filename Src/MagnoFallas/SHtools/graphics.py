@@ -66,7 +66,7 @@ def TestCenter(k, b1, b2, Nli=1):
     return res
 
 
-def BrilMap(foo, SH, Np=100, Nli=1):
+def BrilMap(foo, SH, Np=100, Nli=3):
     r'''
     The tool to calculate a map of quantity foo inside the first Brillouin zone of 2D magnetic material
     foo - function of a wavevector (wavevector is a 1D array with size 3)
