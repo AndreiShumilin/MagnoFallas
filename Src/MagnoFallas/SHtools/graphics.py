@@ -48,7 +48,7 @@ B_cmap = ListedColormap(B_cmap)
 
 
 @nb.njit
-def TestCenter(k, b1, b2, Nli=1):
+def TestCenter(k, b1, b2, Nli=3):
     r'''
     Checks if a point lies in 1-st Brillouin zone
     '''
