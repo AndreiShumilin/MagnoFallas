@@ -10,3 +10,9 @@ __pycache__/
 # Jupyter Notebook
 .ipynb_checkpoints
 
+# Ignore tutorials for now
+Tutorials
+
+
+# A folder to run temporary projects
+TMP
