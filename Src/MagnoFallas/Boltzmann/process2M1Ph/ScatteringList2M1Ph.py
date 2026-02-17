@@ -25,7 +25,7 @@ import numba as nb
 from numba.experimental import jitclass
 
 
-import phonopy
+#import phonopy
 
 
 import MagnoFallas.OldRadtools as rad
