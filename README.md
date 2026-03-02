@@ -5,7 +5,7 @@
 
 The code is designed to calculate Gilbert and non-Gilbert damping in magnetic insulators from ab initio–derived spin Hamiltonians. The calculations are performed within the Boltzmann approximation. Some parts of the calculations use JIT compilation provided by the **numba** library.
 
-It contains interfaces with **TB2J** and **phonopy** to import information on the spin Hamiltonian and phonons, respectively. The magnon-phonon interaction can be calculated in two major ways: from the set of TB2J results with displaced atoms, and based on the dipole-dipole interaction, which is calculated automatically from the atomic coordinates.
+It contains interfaces with **TB2J** (based on RadTools<sup>(1)</sup>) and **phonopy** to import information on the spin Hamiltonian and phonons, respectively. The magnon-phonon interaction can be calculated in two major ways: from the set of TB2J results with displaced atoms, and based on the dipole-dipole interaction, which is calculated automatically from the atomic coordinates.
 
 The code contains three main functionalities:
 
@@ -23,7 +23,7 @@ Finally, the code contains utility functions supporting the main functionalities
 - Interfaces with TB2J and Phonopy codes <br>
 - Several models for the automatic construction of spin Hamiltonians in representative cases, including the minimal model of 2D and 3D ferromagnetic and antiferromagnetic materials, and yttrium iron garnet, with exchange interactions either provided by the user or derived from the literature
 
-Some parts of the code (mostly the interface with TB2J and the non-numba version of spin Hamiltonian diagonalization) are based on an older version of **Rad-Tools** by Andrey Rybakov.
+Some parts of the code (mostly the interface with TB2J and the non-numba version of spin Hamiltonian diagonalization) are based on an older version of **Rad-Tools** by Andrey Rybakov<sup>(1)</sup>.
 
 Currently, the code should be used as a Python library. The **Tutorials** section provides explained examples of representative calculations performed with the code.
 
@@ -96,5 +96,7 @@ email: andrei.shumilin@uv.es
 We also recomend visiting Valencia in March for further inspiration
 
 
+---------------
 
+<sup>(1)</sup> version 0.9.2 of RadTools by Andrey Rybakov, available at https://github.com/adrybakov/rad-tools/commit/2707dea716bf655b0d62172b853f5002bca808df with several non-essential component removed. 
 
