@@ -64,10 +64,10 @@ class TIDDbond(object):
         self.R0 = R0
         self.dim = dim
 
-        self.R1T = R1T
-        self.R2 =  R2
+        self.R1T = np.asarray(R1T, dtype=np.complex128)
+        self.R2 =  np.asarray(R2, dtype=np.complex128)
 
-        prefactor = g1*g2 * 0.5 / Vuc   #### 0.5 is due to the double conting     
+        prefactor = g1*g2 * 0.5 / Vuc   #### 0.5 is due to the double counting     
         if inverse:                      #### most of the Hamiltonians, including dipole-dipole are written with positive ferromagnetic energies
             prefactor = -1*prefactor
 
@@ -256,12 +256,16 @@ class TIDDbond(object):
 ###-----------------------------------------------------------
 ## Convers rad-tools spin Hamiltonian into the typed list of IDD bonds
 
-#### must be created from non-ferromagnetic Hamiltonian to correctly include spin rotatio matricies
-def H4magnons_bonds_IDD(SH, R0, dim):
+#### must be created from non-ferromagnetic Hamiltonian to correctly include spin rotatioт matricies
+def H4magnons_bonds_IDD(SH, R0, dim, gfactors=None):
     ### important: bond vector is between atoms, not unit cells
     Nat = len(SH.magnetic_atoms)
     Vuc = ut.cellVolume(SH.cell, (dim==2) )
     AtInd = {}
+
+    if gfactors is None:
+        gfactors = np.zeros(Nat, dtype=np.float64) + 2.0
+    
     for i,at in enumerate(SH.magnetic_atoms):
         AtInd[at] = i
     
@@ -274,7 +278,8 @@ def H4magnons_bonds_IDD(SH, R0, dim):
             R1T = np.transpose(R1).copy()
             R2 = qut.vec_to_RM(at1.spin_vector)
             R2 = (1+0j)*R2
-            bndIDD = TIDDbond(ty1,ty2, R0, Vuc, S1 = at1.spin, S2=at2.spin, R1T =R1T, R2 = R2, dim=dim, Nat=Nat)
+            bndIDD = TIDDbond(ty1,ty2, R0, Vuc, S1 = at1.spin, S2=at2.spin, R1T =R1T, R2 = R2, dim=dim, Nat=Nat,
+                             g1=gfactors[ty1], g2=gfactors[ty2])
             bond_list.append(bndIDD)
             
     return bond_list
@@ -337,8 +342,8 @@ def PermutedLinesIDD(H4bonds):
 ### main procedure creating "line-type" terms for 4-magnon Hamiltonian
 ### representing LR dipole-dipole exchange interaction
 ### must be created from the initial spin Hamiltonian without FM-rotation
-def Create_IDD_lines(SH, R0, dim=2):
-    BondList = H4magnons_bonds_IDD(SH, R0, dim)  
+def Create_IDD_lines(SH, R0, dim=2, gfactors=None):
+    BondList = H4magnons_bonds_IDD(SH, R0, dim, gfactors=gfactors)  
     LineList = PermutedLinesIDD(BondList)
     return LineList
 ####-------------------------------------------------------------------------------

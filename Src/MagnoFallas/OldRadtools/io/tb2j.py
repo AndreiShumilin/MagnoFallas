@@ -96,6 +96,7 @@ def load_tb2j_model(
     # Do not correct spelling, it is taken from TB2J.
     cell_flag = "Cell (Angstrom):"
     atoms_flag = "Atoms:"
+    atoms_details_flag = "number"
     atom_end_flag = "Total"
     exchange_flag = "Exchange:"
     iso_flag = "J_iso:"
@@ -105,6 +106,25 @@ def load_tb2j_model(
     file = open(filename, "r")
     model = SpinHamiltonian(notation="TB2J")
     line = True
+
+    Mscalar_flag = 'w_magmom'
+    Mvector_flag1 = 'M(x)'
+    Mvector_flag2 = 'M(y)'
+    Mvector_flag3 = 'M(z)'
+    InfoMVector = -1    ### 0 - M is scalar (No SOC)
+                        ### 1 - M is vector (No SOC)
+                        ### -1 - is not set yet
+    def checkSoc(ln1, InfoMVector):
+        #print(ln1)
+        if atoms_details_flag in ln1:
+            if Mscalar_flag in ln1:
+                return 0
+            else:
+                if ( (Mvector_flag1 in ln1) and
+                   (Mvector_flag2 in ln1) and
+                   (Mvector_flag3 in ln1)):
+                    return 1
+        return InfoMVector
 
     # Read everything before exchange
     while line:
@@ -137,14 +157,25 @@ def load_tb2j_model(
 
         # Read atoms
         if line and atoms_flag in line:
+            InfoMVector = checkSoc(line, InfoMVector)
             line = file.readline()
+            InfoMVector = checkSoc(line, InfoMVector)
             line = file.readline()
-            line = file.readline().split()
+            InfoMVector = checkSoc(line, InfoMVector)
+            line = file.readline()
+            InfoMVector = checkSoc(line, InfoMVector)
+            line = line.split()
             i = 1
+            #print('SOC type found : ', InfoMVector)
             while line and atom_end_flag not in line:
                 try:
                     # Slicing is not used intentionally.
-                    magmom = tuple(map(float, [line[5], line[6], line[7]]))
+                    if InfoMVector == 1:
+                        magmom = tuple(map(float, [line[5], line[6], line[7]]))
+                    elif InfoMVector == 0:
+                        magmom = tuple(map(float, [0.0, 0.0, line[5]]))
+                    else:
+                        magmom = None
                 except IndexError:
                     magmom = None
                 try:

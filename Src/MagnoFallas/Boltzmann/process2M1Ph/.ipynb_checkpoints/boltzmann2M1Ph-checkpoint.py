@@ -47,7 +47,8 @@ class Boltzman_alpha2M1Ph:
     def __init__(self, SH, Ephon, Ngx, Ngy, Ngz, rKxM = 1.0, rKyM = 1.0, rKzM = 1.0, dim=None, lamAcu=None, Ecut=None, roles = slist.rolesMC,
                 B = 0.0, MaxBranch = None, Name = 'bolt_2M_1Ph', atom_map = None,
                 SpinPhon = None,
-                LRdd=False, includeSRDD=False, R0=12):
+                LRdd=False, includeSRDD=False, R0=12,
+                gStrategy="2", gClust=None, gValues=None):
         r"""
         SH - spin Hamiltonian (note: should not include dipole-dipole interactions if includeSRDD is true)
         Ephon - information on phonons according to Interface.UtilPhonopy 
@@ -71,6 +72,13 @@ class Boltzman_alpha2M1Ph:
         LRdd - wether to include long-rage DD
         includeSRDD - True leads to automatic addition of short-range DD with cutoff R0
         R0 - cutoff for long/short range dipole-dipole interaction
+
+        gStrategy --- strategy for calculating g-factors, should be one of:
+          "2" - all g-factors equal 2 (probably due to weak SOC)
+          "Magn" - g-factors are calculated from Magnetization values in TB2J
+          "Cluster" - also from TB2J, but each spin is associated with a cluster of atoms, the "maps" of the clausters should be provided
+                       in gClust
+          "Values" - user-provided values of g-factors. Must be in gValues  
         """
         self.Ngx = Ngx
         self.Ngy = Ngy
@@ -100,6 +108,7 @@ class Boltzman_alpha2M1Ph:
         self.Log.cut()
         
         SHzero = SH
+        self.gFactors  = dd.get_gFactors(SH, gStrategy=gStrategy, gClust=gClust, gValues=gValues) 
         self.LR = LRdd
         self.SR = includeSRDD
         if (self.LR or self.SR):
@@ -171,7 +180,7 @@ class Boltzman_alpha2M1Ph:
         
         self.Hlines = quant.Full_dHS_toMagn(self.SpinPhon, self.SH) 
         if self.LR:
-            self.HlinesLR = quantLR.LR_to_Lines_2M1Ph(self.SH, self.R0, self.liMag, self.dim) 
+            self.HlinesLR = quantLR.LR_to_Lines_2M1Ph(self.SH, self.R0, self.liMag, self.dim, gfactors = None) 
         self.Log.Twrite('quantum Hamiltonian calculated')
         
         list0 = slist.EmptyScatList2M1Ph()

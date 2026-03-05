@@ -64,7 +64,8 @@ class Boltzman_alpha:
     def __init__(self, SH, Ngx, Ngy, Ngz=1, rKxM = 1.0, rKyM = 1.0, rKzM = 1.0, lamAcu=None, dim=None,
                  acuRegime=True, acuDeltaCor = True, B=0.0, roles=rolesMC, Ecut=None, NKXac=None, NKYac=None, NKZac=None, Nbmax=None,
                  Name = 'bolt_4M',
-                 LRdd=False, includeSRDD=False, R0=12):
+                 LRdd=False, includeSRDD=False, R0=12,
+                 gStrategy="2", gClust=None, gValues=None):
         r"""
         SH - Spin Hamiltonian
         Ngx, Ngy, Ngz - size of the K-grid
@@ -84,6 +85,14 @@ class Boltzman_alpha:
         LRdd - wether to include long-range dipole-dipole interaction
         includeSRDD - wether to automatically add short-range dipole-dipole interaction to spin Hamiltonian
         R0 - cutoff radius for long/short-range dipole-dipole interaction
+
+        gStrategy --- strategy for calculating g-factors, should be one of:
+          "2" - all g-factors equal 2 (probably due to weak SOC)
+          "Magn" - g-factors are calculated from Magnetization values in TB2J
+          "Cluster" - also from TB2J, but each spin is associated with a cluster of atoms, the "maps" of the clausters should be provided
+                       in gClust
+          "Values" - user-provided values of g-factors. Must be in gValues  
+        
         """
         
         if dim is None:
@@ -115,6 +124,8 @@ class Boltzman_alpha:
 
         SHzero = SH
 
+        self.gFactors  = dd.get_gFactors(SH, gStrategy=gStrategy, gClust=gClust, gValues=gValues) 
+
         self.LR = LRdd
         self.SR = includeSRDD
         if (self.LR or self.SR):
@@ -126,7 +137,8 @@ class Boltzman_alpha:
             self.SH = copy.deepcopy(SHzero)
       
         if self.LR:
-            self.pSH = prad.make_pSH2(self.SH, self.B, LR=self.LR, dim=self.dim, R0=self.R0)  
+            self.pSH = prad.make_pSH2(self.SH, self.B, LR=self.LR, dim=self.dim, R0=self.R0,
+                                     gStrategy=gStrategy, gClust=gClust, gValues=gValues)  
                             ###Note prad pSH should be made from initial (non-ferromagnetized) spin Hamiltonian
                             ### to correctly track the effect of magnetic field on sublattices
         else:
@@ -193,7 +205,7 @@ class Boltzman_alpha:
         self.SHlines = quant.PermutedMagnon4_Ham(self.SH)
         
         if self.LR:
-            self.LRlines = quant4dd.Create_IDD_lines(self.SH, R0, dim=3)
+            self.LRlines = quant4dd.Create_IDD_lines(self.SH, R0, dim=self.dim, gfactors=self.gFactors)
         self.Log.Twrite('Quantum Hamiltonian created')
 
         self.LogCountMax = 15

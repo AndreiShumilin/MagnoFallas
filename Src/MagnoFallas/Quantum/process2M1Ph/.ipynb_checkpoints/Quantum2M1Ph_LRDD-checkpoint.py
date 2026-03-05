@@ -60,17 +60,17 @@ Tline2M1Ph_lst = [       ### 2 magnon 1 phonon
 @jitclass(Tline2M1Ph_lst)
 class Tline2M1PhLR(object):
     def __init__(self, A,r,nu, Rph, edis, R0, dim, R1T=eye1c, R2=eye1c):
-        self.A = A
-        self.r = r
-        self.nu = nu
+        self.A = np.asarray(A, dtype=np.complex128)
+        self.r = np.asarray(r, dtype=np.float64)
+        self.nu = np.asarray(nu, dtype=np.int32)
         self.Rph = Rph
-        self.edis = edis
+        self.edis = np.asarray(edis, dtype=np.float64)
 
         self.R0 = R0
         self.dim = dim
 
-        self.R1T = R1T
-        self.R2 = R2
+        self.R1T = np.asarray(R1T, dtype=np.complex128)
+        self.R2 = np.asarray(R2, dtype=np.complex128)
 
 def lineMelDD(line, kx2, lamx2, Gix2, NMat, ph_q, ph_Om, ph_EdAll, ph_masses, roles, Vuc ):
 
@@ -138,14 +138,21 @@ def PermutatedList(list0):
 
 
 
-def LR_to_Lines_2M1Ph(SH, R0, liMag, dim):
+def LR_to_Lines_2M1Ph(SH, R0, liMag, dim, gfactors = None):
     lis0 = nb.typed.List()
     RotDict = qut.FerroHam_rotation_dict(SH)
+
+    Nat = len(SH.magnetic_atoms)
+    if gfactors is None:
+        gfactors = np.zeros(Nat, dtype=np.float64) + 2.0
+    
     for i1,at1 in enumerate(SH.magnetic_atoms): 
         for i2,at2 in enumerate(SH.magnetic_atoms): 
             Rm1 = RotDict[at1.name]
             Rm2 = RotDict[at2.name].copy().astype(np.complex128)
             Rm1T = np.transpose(Rm1).copy().astype(np.complex128)
+
+            prefactor1 = gfactors[i1]*gfactors[i2]/4
             
             ty1 = i1
             ty2 = i2
@@ -164,6 +171,7 @@ def LR_to_Lines_2M1Ph(SH, R0, liMag, dim):
                 Amat[1,1] = -As
                 Amat[0,1] = -1j*As
                 Amat[1,0] = -1j*As
+                Amat *= prefactor1
                 rs = np.array( [0, 1], dtype=np.float64  )       #np.array( [r1, r2]  )   
                 ts = np.array( [ty1, ty2] , dtype=np.int32) 
                 line = Tline2M1PhLR(Amat, rs, ts, 1, edis,   R0, dim, Rm1T,Rm2)
@@ -177,6 +185,7 @@ def LR_to_Lines_2M1Ph(SH, R0, liMag, dim):
                 Amat[1,1] = As
                 Amat[0,1] = 1j*As
                 Amat[1,0] = -1j*As
+                Amat *= prefactor1
                 rs = np.array( [0, 1], dtype=np.float64  )     #np.array( [r1, r2]  )   
                 ts = np.array( [ty1, ty2 + Nat] )   
                 line = Tline2M1PhLR(Amat, rs, ts, 1, edis,   R0, dim, Rm1T,Rm2)
@@ -190,6 +199,7 @@ def LR_to_Lines_2M1Ph(SH, R0, liMag, dim):
                 Amat[1,1] = As
                 Amat[0,1] = -1j*As
                 Amat[1,0] = 1j*As
+                Amat *= prefactor1
                 rs = np.array( [0, 1], dtype=np.float64  )   #np.array( [r1, r2]  )   
                 ts = np.array( [ty1+Nat, ty2] )   
                 line = Tline2M1PhLR(Amat, rs, ts, 1, edis,   R0, dim, Rm1T,Rm2)
@@ -203,6 +213,7 @@ def LR_to_Lines_2M1Ph(SH, R0, liMag, dim):
                 Amat[1,1] = -As
                 Amat[0,1] = 1j*As
                 Amat[1,0] = 1j*As
+                Amat *= prefactor1
                 rs = np.array( [0, 1], dtype=np.float64  )   #np.array( [r1, r2]  )   
                 ts = np.array( [ty1 + Nat, ty2 + Nat] )   
                 line = Tline2M1PhLR(Amat, rs, ts, 1, edis,   R0, dim, Rm1T,Rm2)
@@ -213,6 +224,7 @@ def LR_to_Lines_2M1Ph(SH, R0, liMag, dim):
                 As = -S2   #*J1[2,2]
                 Amat = np.zeros((3,3), dtype = np.complex128)
                 Amat[2,2] = As
+                Amat *= prefactor1
                 rs = np.array( [0, 0], dtype=np.float64  )   #rs = np.array( [r1, r1]  )   
                 ts = np.array( [ty1+Nat, ty1] )   
                 line = Tline2M1PhLR(Amat, rs, ts, 1, edis,   R0, dim, Rm1T,Rm2)
@@ -223,6 +235,7 @@ def LR_to_Lines_2M1Ph(SH, R0, liMag, dim):
                 A = -S1   #*J1[2,2]
                 Amat = np.zeros((3,3), dtype = np.complex128)
                 Amat[2,2] = As
+                Amat *= prefactor1
                 rs = np.array( [1, 1], dtype=np.float64  )   #rs = np.array( [r2, r2]  )   
                 ts = np.array( [ty2+Nat, ty2] )   
                 line = Tline2M1PhLR(Amat, rs, ts, 1, edis,   R0, dim, Rm1T,Rm2)

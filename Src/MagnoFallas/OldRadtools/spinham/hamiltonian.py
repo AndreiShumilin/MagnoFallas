@@ -41,7 +41,7 @@ from MagnoFallas.OldRadtools.crystal.crystal import Crystal
 from MagnoFallas.OldRadtools.exceptions import NotationError
 from MagnoFallas.OldRadtools.spinham.constants import PREDEFINED_NOTATIONS
 from MagnoFallas.OldRadtools.spinham.parameter import ExchangeParameter
-from MagnoFallas.OldRadtools.spinham.template import ExchangeTemplate
+#from MagnoFallas.OldRadtools.spinham.template import ExchangeTemplate
 
 
 class SpinHamiltonian(Crystal):
@@ -673,7 +673,7 @@ class SpinHamiltonian(Crystal):
         super().remove_atom(atom)
 
     def filter(
-        self, max_distance=None, min_distance=None, template=None, R_vector=None
+        self, max_distance=None, min_distance=None,  R_vector=None
     ):
         r"""
         Filter the exchange entries based on the given conditions.
@@ -688,10 +688,6 @@ class SpinHamiltonian(Crystal):
             Distance for sorting, the condition is <<less or equal>>.
         min_distance : float or int, optional
             Distance for sorting, the condition is <<more or equal>>.
-        template : list or :py:class:`.ExchangeTemplate`.
-            List of pairs, which will remain in the Hamiltonian. ::
-
-                [(atom1, atom2, R), ...]
 
         R_vector : tuple of ints or list of tuples of ints
             Tuple of 3 integers or list of tuples, specifying the R vectors,
@@ -705,11 +701,6 @@ class SpinHamiltonian(Crystal):
         -----
         This method modifies the instance at which it is called.
         """
-
-        if isinstance(template, ExchangeTemplate):
-            template = template.get_list()
-        if template is not None:
-            template = set(template)
 
         if R_vector is not None:
             if type(R_vector) == tuple:
@@ -739,14 +730,7 @@ class SpinHamiltonian(Crystal):
             if condition:
                 bonds_for_removal.add((atom1, atom2, R))
 
-            # Here names, not objects are compared, because in general
-            # template only has information about names (or fullnames) and R.
-            if (
-                template is not None
-                and (atom1.name, atom2.name, R) not in template
-                and (atom1.fullname, atom2.fullname, R) not in template
-            ):
-                bonds_for_removal.add((atom1, atom2, R))
+
 
         for atom1, atom2, R in bonds_for_removal:
             try:
@@ -755,7 +739,7 @@ class SpinHamiltonian(Crystal):
                 pass
 
     def filtered(
-        self, max_distance=None, min_distance=None, template=None, R_vector=None
+        self, max_distance=None, min_distance=None,  R_vector=None
     ):
         r"""
         Create filtered spin Hamiltonian based on the given conditions.
@@ -773,10 +757,7 @@ class SpinHamiltonian(Crystal):
             Distance for sorting, the condition is <<less or equal>>.
         min_distance : float or int, optional
             Distance for sorting, the condition is <<more or equal>>.
-        template : list or :py:class:`.ExchangeTemplate`
-            List of pairs, which will remain in the Hamiltonian. ::
 
-                [(atom1, atom2, R), ...]
 
         R_vector : tuple of ints or list of tuples of ints
             Tuple of 3 integers or list of tuples, specifying the R vectors,
@@ -801,88 +782,11 @@ class SpinHamiltonian(Crystal):
         filtered_model.filter(
             max_distance=max_distance,
             min_distance=min_distance,
-            template=template,
             R_vector=R_vector,
         )
         return filtered_model
 
-    # TODO rewrite with new template logic (J1 through getattr)
-    def form_model(self, template):
-        r"""
-        Force the Hamiltonian to have the symmetries of the template.
 
-        Takes mean values of the parameters.
-        For DMI interaction directions are kept the same,
-        but the length of the DMI vector is scaled.
-
-        This method modifies an instance on which it was called.
-
-        .. versionchanged:: 0.8.0 Renamed from ``force_symmetry``
-
-        Parameters
-        ----------
-        template : :py:class:`.ExchangeTemplate`
-            Template.
-
-        See Also
-        --------
-        formed_model : Returns new object.
-        """
-
-        if not isinstance(template, ExchangeTemplate):
-            raise TypeError
-
-        self.filter(template=template)
-
-        for name in template.names:
-            bonds = template.names[name]
-            symm_matrix = np.zeros((3, 3), dtype=float)
-            dmi_module = 0
-            for atom1, atom2, R in bonds:
-                # Here names, not objects are obtained, because in general
-                # template only has information about names and R.
-                J = self[self.get_atom(atom1), self.get_atom(atom2), R]
-                symm_matrix = symm_matrix + J.symm_matrix
-                dmi_module = dmi_module + J.dmi_module
-
-            symm_matrix = symm_matrix / len(bonds)
-            dmi_module = dmi_module / len(bonds)
-
-            for atom1, atom2, R in bonds:
-                J = self[self.get_atom(atom1), self.get_atom(atom2), R]
-                if J.dmi_module != 0:
-                    asymm_factor = dmi_module / J.dmi_module
-                else:
-                    asymm_factor = 0
-                J.matrix = symm_matrix + J.asymm_matrix * asymm_factor
-
-    def formed_model(self, template):
-        r"""
-        Form the model from the Hamiltoian based on the template.
-
-        Takes mean values of the parameters.
-        Respect the direction of the DMI vectors.
-
-        This method return a new instance.
-
-        Parameters
-        ----------
-        template : :py:class:`.ExchangeTemplate`
-            Template.
-
-        Returns
-        -------
-        new_model : :py:class:`.SpinHamiltonian`
-            Spin Hamiltonian with forced symmetry.
-
-        See Also
-        --------
-        form_model: Modifies current object.
-        """
-
-        new_model = deepcopy(self)
-        new_model.form_model(template=template)
-        return new_model
 
     def ferromagnetic_energy(self, theta=0, phi=0):
         r"""

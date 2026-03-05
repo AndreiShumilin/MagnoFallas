@@ -420,20 +420,26 @@ def formLists(SH0, pos, disMax = 5):
 
 
 
-def cloneSH(SH0, cell1):
+def cloneSH(SH0, cell1=None, Multiply=None):
     r"""
-    clones spin Hamiltonian with new cell
+    clones spin Hamiltonian, possibly with new cell (cell1)
+    also can multiply all exchange interactions by Factor Multiply
     uses standardize=False to prevent spontaneous rotations
     """
+    if cell1 is None:
+        cell1 = SH0.cell.copy()
+    if Multiply is None:
+        Multiply = 1.0
+
     SH = rad.SpinHamiltonian(cell=cell1, standardize=False)
     SH.notation = SH0.notation
-
+    
     for at in SH0.magnetic_atoms:
         at1 = copy.deepcopy(at)
         SH.add_atom(at1)
 
     for at1,at2,cvec, J in SH0:
-        Jmat = J.matrix
+        Jmat = J.matrix*Multiply
         Jnew = rad.ExchangeParameter(matrix=Jmat)
         SH[at1.name, at2.name,cvec] = Jnew
     return SH

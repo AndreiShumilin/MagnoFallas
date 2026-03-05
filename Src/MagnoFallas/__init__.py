@@ -42,6 +42,11 @@ from .Utils.util2 import GetRealPositions
 from .Utils.DipoleDipole import AddSRDD
 #--------------------------------------------------------
 
+#--------------------------------------------------------
+from .Utils.GroundState import ShapeEnergy
+from .Utils.GroundState import SOCEnergy
+#--------------------------------------------------------
+
 #-------------------------------------------------------
 from .Models.ToyFM import ToyModel as ToyModelFM
 from .Models.ToyAFM import ToyModelAFM as ToyModelAFM

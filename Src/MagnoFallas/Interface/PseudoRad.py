@@ -87,7 +87,7 @@ TpradSHlist =  [
 class TpradSH(object):
     def __init__(self, Jij, i, j, dij, Nat, S, u, v, B, signs,
                  LR=False, dim=0, R0=0.0, Vcell=1.0, Rmatr = zeros3c,
-                 stabField = Stabilizing_field_0):
+                 stabField = Stabilizing_field_0, gfactors=None):
         self.Jij = Jij
         self.i = i
         self.j = j
@@ -100,9 +100,14 @@ class TpradSH(object):
         self.C = np.zeros((Nat,Nat), dtype=np.complex128)
 
         NS = S.shape[0]
-        self.g = np.zeros(NS)
+        
+        if gfactors is None:
+            gfactors = np.zeros(NS, dtype=np.float64) + 2.0
+            
+            
+        self.g = np.zeros(NS, dtype=np.float64)
         for i in range(NS):
-            self.g[i] = 2.0*signs[i]
+            self.g[i] = gfactors[i]*signs[i]
                             #+ 0.5   ###### To CHANGE
         self.B_mag = B
         self.B_stab = stabField
@@ -155,7 +160,8 @@ def make_pSH(Magn, B=0.0, spinproj=None, LR=False, dim=2, SH=None, R0=0):
 #####  note: magnetic field is considered to be applied along mean spin polarization
 #####  in AFMs it is applied alonf the direction of a random sub-lattice
 #####  it would also work incorrectly for non-colinear magnets
-def make_pSH2(SH, B=0.0, LR=False, dim=2, R0=0, stabField = Stabilizing_field_0):
+def make_pSH2(SH, B=0.0, LR=False, dim=2, R0=0, stabField = Stabilizing_field_0,
+             gStrategy="2", gClust=None, gValues=None):
     r"""
     Constructs numba-compatible spin-Hamiltonian from the initial spin-hamiltonian SH
     B  external magnetic field [T]
@@ -165,10 +171,19 @@ def make_pSH2(SH, B=0.0, LR=False, dim=2, R0=0, stabField = Stabilizing_field_0)
     stabField - additional "fictional" field helping for convergance of the matricies at Gamma point. Should be 
                 a small positive value
 
-    Note: to correctly use the LR dipole-dipole interaction, the short-range dipole-dipole interaction 
-         must be already added to SH with the same cutoff distance R0
-    """
+    gStrategy --- strategy for calculating g-factors, should be one of:
+      "2" - all g-factors equal 2 (probably due to weak SOC)
+      "Magn" - g-factors are calculated from Magnetization values in TB2J
+      "Cluster" - also from TB2J, but each spin is associated with a cluster of atoms, the "maps" of the clausters should be provided
+                   in gClust
+      "Values" - user-provided values of g-factors. Must be in gValues  
+                
 
+    Note: to correctly use the LR dipole-dipole interaction, the short-range dipole-dipole interaction 
+         must be already added to SH with the same cutoff distance R0 (and with the same parameters for calculating g-factors)
+    """
+    
+    gFactors = dd.get_gFactors(SH, gStrategy=gStrategy, gClust=gClust, gValues=gValues) 
     
     SHferro = qut.make_FerroHam(SH)
     Magn = rad.MagnonDispersion(SHferro)
@@ -200,7 +215,8 @@ def make_pSH2(SH, B=0.0, LR=False, dim=2, R0=0, stabField = Stabilizing_field_0)
         for iat,at in enumerate(SH.magnetic_atoms):
             Rm = qut.vec_to_RM(at.spin_vector)
             Rmatr[iat] = Rm
-        pSH = TpradSH(Jij, ai, aj, dij, Nat, S1, u1, v1, B, signs,   LR,dim,R0,Vcell,Rmatr, stabField=stabField)
+        pSH = TpradSH(Jij, ai, aj, dij, Nat, S1, u1, v1, B, signs,   LR,dim,R0,Vcell,Rmatr, stabField=stabField,
+                     gfactors=gFactors)
     else:
         pSH = TpradSH(Jij, ai, aj, dij, Nat, S1, u1, v1, B, signs, stabField=stabField)
     pSH.C = prad_init_C(pSH)
@@ -226,10 +242,10 @@ def J(pSH, k):
         )
         
     if pSH.LR:
-        g = 2    ###### !!!!! for the time being it's fixed
+        #g = 2    ###### !!!!! for the time being it's fixed
         Jmat0 = dd.longrangeDDmatr(k, pSH.R0, pSH.dim, g1=2, g2=2)
         #### we calculate Jmat0 only once with effective g-factors g1 = g2 = 2
-        #### g-factors of real spins can be added later
+        #### g-factors of real spins are added later
         Jmat0 *= (-1.0)*(0.5)      #### general translation between notations
         Jmat0 /= pSH.Vcell
         for i in range(pSH.Nat):

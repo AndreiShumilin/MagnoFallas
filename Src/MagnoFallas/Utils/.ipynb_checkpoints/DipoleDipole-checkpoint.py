@@ -139,28 +139,113 @@ def DDmatr(r0, g1=2, g2=2):
     return Mat
 
 
-def AddSRDD(SH0, R0, dim=3):
+##############################################################################################################
+#---------- procedures related to different strategies for estimation of g-factor ---------------------------------------------------
+def gFromVecs(sVec, mVec):
+    spin = np.linalg.norm(sVec)
+    m1 = mVec@sVec/spin
+    g = m1/spin
+    return g
+
+def gFromAt(at):
+    if at._magmom is None:
+        return 2.0
+    else:
+        return gFromVecs(at.spin_vector, at.magmom)
+
+
+def findAtom(SH, name):
+    for at in SH.atoms:
+        if at.name==name:
+            return at
+    return None
+
+def gFromMap(at, SH, mmap):
+    if not at.name in mmap.keys():
+        return gFromAt(at)
+    else:
+        lst1 = mmap[at.name]
+        magmom1 = np.zeros(3, dtype=np.float64)
+        for nam1 in lst1:
+            at1 = findAtom(SH, nam1)
+            magmom1 += np.asarray(at1.magmom, dtype=np.float64)
+        return gFromVecs(at.spin_vector, magmom1)
+
+
+def get_gFactors(SH, gStrategy="2", gClust=None, gValues=None):
+    r"""
+    calculates the set of g-factors for a Spin Hamiltonian SH
+    
+    gStrategy --- strategy for calculating g-factors, should be one of:
+    "2" - all g-factors equal 2 (probably due to weak SOC)
+    "Magn" - g-factors are calculated from Magnetization values in TB2J
+    "Cluster" - also from TB2J, but each spin is associated with a cluster of atoms, the "maps" of the clausters should be provided
+                 in gClust
+    "Values" - user-provided values of g-factors. Must be in gValues 
+    """
+    Nat = len(SH.magnetic_atoms)
+
+    gFactors = np.zeros(Nat, dtype=np.float64)
+    if gStrategy == "2":
+        gFactors = gFactors+2
+    elif gStrategy == "Magn":
+        for iat,at in enumerate(SH.magnetic_atoms):
+            g1 = gFromAt(at)
+            gFactors[iat] = g1
+    elif gStrategy == "Cluster":
+        for iat,at in enumerate(SH.magnetic_atoms):
+            g1 = gFromMap(at, SH, gClust)
+            gFactors[iat] = g1
+    elif gStrategy == "Values":
+        for iat in range(Nat):
+            gFactors[iat] = gValues[iat]
+            
+    return gFactors
+            
+
+
+###############################################################################################################
+
+
+def AddSRDD(SH0, R0, dim=3,
+           gStrategy="2", gClust=None, gValues=None):
     r"""
     Automatically adds short-range dipole-dipole interaction (SRDD) to the spin-Hamiltonian
     Rmax - cutoff distance of SRDD
     dim - system dimensionality
+
+    gStrategy --- strategy for calculating g-factors, should be one of:
+          "2" - all g-factors equal 2 (probably due to weak SOC)
+          "Magn" - g-factors are calculated from Magnetization values in TB2J
+          "Cluster" - also from TB2J, but each spin is associated with a cluster of atoms, the "maps" of the clausters should be provided
+                       in gClust
+          "Values" - user-provided values of g-factors. Must be in gValues 
     """
     if R0<=0:
         return SH0
     Nx, Ny, Nz = calculateNdd(SH0, R0, dim=dim)
-    SH = AddDD(SH0, NxMax=Nx, NyMax=Ny, NzMax=Nz, Rmax = R0)
+    SH = AddDD(SH0, NxMax=Nx, NyMax=Ny, NzMax=Nz, Rmax = R0,
+              gStrategy=gStrategy, gClust=gClust, gValues=gValues)
     return SH
 
 
 ### adds Short-Range dipole-dipole interactrion to a spin Hamiltoniam
 ### NxMax - NzMax is the maximum distance in unit cell vectors
-def AddDD(SH0, NxMax=3, NyMax=3, NzMax=0, exs=ex, eys=ey,ezs=ez, Rmax = None):
+def AddDD(SH0, NxMax=3, NyMax=3, NzMax=0, exs=ex, eys=ey,ezs=ez, Rmax = None,
+         gStrategy="2", gClust=None, gValues=None):
     r"""
     Addition of the short-range dipole-dipole interaction (SRDD) to the spin Hamiltonian
     SH0 - initial spin Hamiltonian
     NxMax, NyMax, NzMax - maximum displacements in unit cells required to calculate the interaction
     exs, eys, ezs - effective ex, ey and ez axes for spin-orbit interaction. In most of the cases should not be modified
     Rmax - the cutoff distance for SRDD
+
+    gStrategy --- strategy for calculating g-factors, should be one of:
+          "2" - all g-factors equal 2 (probably due to weak SOC)
+          "Magn" - g-factors are calculated from Magnetization values in TB2J
+          "Cluster" - also from TB2J, but each spin is associated with a cluster of atoms, the "maps" of the clausters should be provided
+                       in gClust
+          "Values" - user-provided values of g-factors. Must be in gValues  
     """
     ###  exs, eys, ezs controls spin Coordinate frame (for now it is the same for all the spins, i.e. colinear state)
     ###
@@ -168,6 +253,9 @@ def AddDD(SH0, NxMax=3, NyMax=3, NzMax=0, exs=ex, eys=ey,ezs=ez, Rmax = None):
     SH = copy.deepcopy(SH0)
     SHref = copy.deepcopy(SH0)
     Nat = len(SH.magnetic_atoms)
+
+    gFactors = get_gFactors(SH, gStrategy=gStrategy, gClust=gClust, gValues=gValues)    
+
     OldNotations = SH.notation
     SH.notation = (True,False,-1)    ### +double-counting, -normalization,  -1 multipliyer
     SHref.notation = (True,False,-1)
@@ -189,8 +277,7 @@ def AddDD(SH0, NxMax=3, NyMax=3, NzMax=0, exs=ex, eys=ey,ezs=ez, Rmax = None):
                                 calc = Rabs<Rmax
                             if calc:
                                 rnew = np.array((r@exs, r@eys, r@ezs))
-                                #Jm = DDmatr(rnew, S1=at1.spin, S2=at2.spin) / 2   ## /2 due to double-counting
-                                Jm = DDmatr(rnew) / 2   ## /2 due to double-counting
+                                Jm = DDmatr(rnew,  g1=gFactors[ia1], g2=gFactors[ia2]  ) / 2   ## /2 due to double-counting
                                 if ( (at1, at2, (idx,idy,idz)) in SHref ):
                                     Mold = SHref[at1, at2, (idx,idy,idz)].matrix
                                     Jm1 = Jm+Mold

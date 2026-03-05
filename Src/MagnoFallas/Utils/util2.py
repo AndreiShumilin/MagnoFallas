@@ -35,14 +35,6 @@ from MagnoFallas.Boltzmann.process2M1Ph.ScatteringList2M1Ph import rolesMNC as r
 from MagnoFallas.Boltzmann.process4M.ScatteringList4M import rolesMC as rolesMC_4M
 from MagnoFallas.Boltzmann.process4M.ScatteringList4M import rolesMNC as rolesMNC_4M
 
-### phonon-dependent
-# try:
-#     from MagnoFallas.Interface import UtilPhonopy as utph
-#     util_has_phonons = True
-# except ImportError:
-#     util_has_phonons = False
-
-
 
 __all__ = ['K_to_mev','gaus_delta','Boze','quasimom','matconj','KGrid','KGrid2D','Egrid_prad','Egrid2D_prad','Egrid_Ephonon','Egrid2D_Ephonon','ModGi', 'SameSign','quasimom','rel_kMAx','acousticGrid']
 
@@ -187,6 +179,9 @@ def find_atom_number(positions, coo, cell, dmax=0.5, dr = np.array((0,0,0))):
 
 
 def TotEn(SH):
+    r"""
+    Deprecated!
+    """
     En = 0.0
     for at1,at2, v, Jrad in SH:
         sv1 = at1.spin_vector
@@ -420,20 +415,26 @@ def formLists(SH0, pos, disMax = 5):
 
 
 
-def cloneSH(SH0, cell1):
+def cloneSH(SH0, cell1=None, Multiply=None):
     r"""
-    clones spin Hamiltonian with new cell
+    clones spin Hamiltonian, possibly with new cell (cell1)
+    also can multiply all exchange interactions by Factor Multiply
     uses standardize=False to prevent spontaneous rotations
     """
+    if cell1 is None:
+        cell1 = SH0.cell.copy()
+    if Multiply is None:
+        Multiply = 1.0
+
     SH = rad.SpinHamiltonian(cell=cell1, standardize=False)
     SH.notation = SH0.notation
-
+    
     for at in SH0.magnetic_atoms:
         at1 = copy.deepcopy(at)
         SH.add_atom(at1)
 
     for at1,at2,cvec, J in SH0:
-        Jmat = J.matrix
+        Jmat = J.matrix*Multiply
         Jnew = rad.ExchangeParameter(matrix=Jmat)
         SH[at1.name, at2.name,cvec] = Jnew
     return SH

@@ -28,7 +28,7 @@ from math import sqrt
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from MagnoFallas.OldRadtools.crystal.kpoints import Kpoints
+
 from MagnoFallas.OldRadtools.geometry import span_orthonormal_set
 from MagnoFallas.OldRadtools.magnons.diagonalization import ColpaFailed, solve_via_colpa
 from MagnoFallas.OldRadtools.spinham.hamiltonian import SpinHamiltonian
@@ -359,9 +359,6 @@ class MagnonDispersion:
         """
 
         data = []
-
-        if isinstance(kpoints, Kpoints):
-            kpoints = kpoints.points()
 
         for point in kpoints:
             data.append(self.omega(point, zeros_to_none=zeros_to_none))

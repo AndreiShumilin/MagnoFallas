@@ -33,7 +33,7 @@ Self = TypeVar("Self", bound="ExchangeParameter")
 
 import numpy as np
 
-from MagnoFallas.OldRadtools.decorate.array import print_2d_array
+#from MagnoFallas.OldRadtools.decorate.array import print_2d_array
 
 
 class ExchangeParameter:
@@ -82,8 +82,8 @@ class ExchangeParameter:
     def __format__(self, fmt):
         return self.__str__(fmt=fmt)
 
-    def __str__(self, fmt=".4f"):
-        return print_2d_array(self.matrix, fmt=fmt, print_result=False, borders=False)
+    # def __str__(self, fmt=".4f"):
+    #     return print_2d_array(self.matrix, fmt=fmt, print_result=False, borders=False)
 
     def __repr__(self):
         return f"ExchangeParameter({self.matrix.__repr__()})"
