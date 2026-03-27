@@ -29,3 +29,4 @@ from .graphics import DrawMapSym
 from .graphics import DrawMapPos
 
 from .tools import project
+from .tools import rotateSH

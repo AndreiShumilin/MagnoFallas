@@ -309,7 +309,7 @@ def prad_init_C(pSH):
             )
             
     for i in range(len(J1)):
-        ### g[i] should be negative for the secons dublattice
+        ### g[i] should be negative for the second sublattice
         res[i][i] += -(0.5)*Tesl_to_mev*pSH.g[i]*pSH.B_mag  ##check the signs
                         #### ??? 0.5 to make it compatible with future multiplication my 2 in H()
                         #### should be checked by calculating magnon gap in Heisenberg FM

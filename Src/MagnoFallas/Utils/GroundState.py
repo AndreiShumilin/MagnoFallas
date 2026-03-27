@@ -153,6 +153,7 @@ def TotalEnergy(SH0, evec=None, LR=False, R0 = -1.0, dim=2, gStrategy="2", gClus
                 ee1 = sv1 @ (LRmat0@sv2)
                 ee1 /= Scell
                 ee1 /= 2
+                ee1 *=   gFactors[iat1]*gFactors[iat2]/4
                 TotEn += ee1
 
     TotEn *= -1
