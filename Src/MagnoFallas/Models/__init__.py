@@ -22,3 +22,5 @@
 from . import ToyFM
 from . import ToyAFM
 from . import YIG
+from . import CrI3
+from . import CrPS4

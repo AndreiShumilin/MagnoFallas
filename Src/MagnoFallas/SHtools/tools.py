@@ -208,4 +208,30 @@ def rotateSH(SH0, basis):
 
 
 
+##-------------------------------------------------------------------------------------------------------
 
+def reduceTo2D(H0, AtNames=None):
+    r"""
+    reduces the Hamiltonian (H0) to a single monolayer. Optionaly can keep only the atoms
+    with the names in the lest AtNames
+    """
+    H1 = rad.SpinHamiltonian(cell=H0.cell, standardize=False)
+    H1.notation = H0.notation
+
+    def testName(nam):
+        if AtNames is None:
+            return True
+        return nam in AtNames
+    
+    for iat, at in enumerate(H0.magnetic_atoms):
+        if testName(at.name):
+            at1 = copy.deepcopy(at)
+            H1.add_atom(at1)
+            
+    for at1, at2, dv0, J in H0:
+        good = testName(at1.name)
+        good = good and testName(at2.name)
+        good = good and (dv0[2] == 0)
+        if good:
+            H1.add_bond(at1.name, at2.name, tuple(dv0), matrix=J.matrix) 
+    return H1

@@ -30,3 +30,4 @@ from .graphics import DrawMapPos
 
 from .tools import project
 from .tools import rotateSH
+from .tools import reduceTo2D

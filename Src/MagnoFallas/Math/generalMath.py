@@ -30,7 +30,7 @@ Root_zero = 1.0e-8
 False_value = 1.0e9
 
 
-def FindZeroPoint(fv, vecs, tol=1e-10):
+def FindZeroPoint(fv, vecs, tol=1e-9, MaxSteps=1e4):
     Nv = len(vecs)
     vals = np.zeros(Nv)
     rv = np.zeros(3)
@@ -64,13 +64,20 @@ def FindZeroPoint(fv, vecs, tol=1e-10):
     k2 = 1
     kT = 0.5
     eT = fv(kT*V1 + (1-kT)*V0)
-    
+
+    isteps = 0
     while np.abs(eT)>tol:
+        if isteps > MaxSteps:
+            vec_fin = kT*V1 + (1-kT)*V0
+            return False, vec_fin
+        ##----------------------------------------
         if (eT*eI0 < 0):
+            isteps += 1
             k2 = kT
             kT = (kT+k1)/2
             eT = fv(kT*V1 + (1-kT)*V0)
         elif (eT*eI1 < 0):
+            isteps += 1
             k1 = kT
             kT = (kT + k2)/2
             eT = fv(kT*V1 + (1-kT)*V0)

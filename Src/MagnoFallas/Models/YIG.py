@@ -38,7 +38,7 @@ import MagnoFallas.OldRadtools as rad
 from MagnoFallas.Interface import PseudoRad as prad
 from MagnoFallas.Utils import util2 as ut2
 from MagnoFallas.Utils import DipoleDipole as didi
-from MagnoFallas.Interface import PseudoRad as prad
+
 
 mev_to_THz = 0.2417990504024
 cub_side0 = 12.376

@@ -16,30 +16,3 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-
-r"""
-Not perfectly tested - interface with MuMax3
-"""
-
-
-
-#########################
-
-import numpy as np
-import matplotlib.pyplot as plt
-import copy
-
-
-import MagnoFallas as mfal
-from MagnoFallas.Utils import util2 as ut2
-from MagnoFallas.Utils import MicroMagnetics as micro
-
-### currently everything is inside a foldet
-
-
-from .MuMax3tools.constants import *
-from .MuMax3tools.Material import *
-from .MuMax3tools.Skyrmions import *
-from .MuMax3tools.Magnons import *
-

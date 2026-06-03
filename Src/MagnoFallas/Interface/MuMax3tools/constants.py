@@ -27,19 +27,31 @@ Not perfectly tested - interface with MuMax3
 #########################
 
 import numpy as np
-import matplotlib.pyplot as plt
-import copy
-
-
-import MagnoFallas as mfal
 from MagnoFallas.Utils import util2 as ut2
-from MagnoFallas.Utils import MicroMagnetics as micro
 
-### currently everything is inside a foldet
+####============================
 
+const_Aex_to_Si = ut2.mev_to_J * 1e10
+const_DMI_to_Si = ut2.mev_to_J * 1e20
+const_Ani_to_Si = ut2.mev_to_J * 1e30
 
-from .MuMax3tools.constants import *
-from .MuMax3tools.Material import *
-from .MuMax3tools.Skyrmions import *
-from .MuMax3tools.Magnons import *
+const_muB_Si = 9.2740100657e-24
+const_mu0_Si = 1.25663706127e-6
 
+const_hbar_Si = 1.054571817e-34
+const_hbar_mev = const_hbar_Si/ut2.mev_to_J
+
+AexTensorCutoff0 = 1e-5   ### in meV/A
+AexTensorCutoffSi = AexTensorCutoff0*const_Aex_to_Si
+
+AniCutoff0 = 1e-5
+AniCutoffSi = AniCutoff0 * const_Ani_to_Si
+
+DMICutoff0 = 1e-5
+DMICutoffSi = AniCutoff0 * const_DMI_to_Si
+
+__all__  = ['const_Aex_to_Si', 'const_DMI_to_Si', 'const_Ani_to_Si', 
+           'const_muB_Si', 'const_mu0_Si', 'const_hbar_Si', 'const_hbar_mev', 
+           'AexTensorCutoff0', 'AexTensorCutoffSi', 
+           'AniCutoff0', 'AniCutoffSi',
+           'DMICutoff0','DMICutoffSi']
