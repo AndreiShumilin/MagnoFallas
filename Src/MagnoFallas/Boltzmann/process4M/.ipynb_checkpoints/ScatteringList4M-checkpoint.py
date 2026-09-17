@@ -44,6 +44,8 @@ from MagnoFallas.Math import SurfaceMath as smath
 from MagnoFallas.Math import BulkMath as bmath
 from MagnoFallas.Math import generalMath as gmath
 
+from MagnoFallas.Utils import Logs
+
 
 
 __all__ = ['Tscat','SingleKlist2D','rolesMC','rolesMNC']
@@ -114,7 +116,7 @@ class Tscat(object):
         self.Status = 0
 
 def EmptyScatList():
-    k = np.array((1.0,0.0,0.0))
+    k = np.array((1.0,0.0,0.0), dtype=np.float64)
     kCorn = np.array( (k,k,k,k) )
     sc1 = Tscat(k, 1, k, 1, kCorn, 1, 1, k, rolesMC, 2)
     lis = nb.typed.List()
@@ -275,10 +277,11 @@ def ScatdE(Scat, k2tmp, pSH):
 
 
 ########### finds a real value for k2 of the scattering event
-def findCenter2D(Scat, pSH):
+def findCenter2D(Scat, pSH, Log1=None):
     r"""
-    finds the values of k2/k3 fulfilling the energy-conservation law
+    Finds the values of k2/k3 fulfilling the energy-conservation law
     2D version
+    Log1 - log to write warnings
     """ 
     roles = Scat.roles
     gph = Scat.k3g
@@ -308,9 +311,19 @@ def findCenter2D(Scat, pSH):
         Scat.e2=prad.omega(pSH, k2real)[0][Scat.lk2]
         Scat.e3=prad.omega(pSH, k3real)[0][Scat.lk3]
     else:
-        k2real = np.array((0.0,0.0,0.0))
-        print('Ahtung: scattering is not there!')
-        print(dEv(Scat.k2corners[0]), dEv(Scat.k2corners[1]), dEv(Scat.k2corners[2]), dEv(Scat.k2corners[3]))
+        Eproblem = dEv(k2real)
+        k3real = roles[3]*(gph - roles[0]*k0 - roles[1]*k1  -  roles[2]*k2real)
+        Scat.Exist = 1
+        Scat.k2real = k2real.copy()
+        Scat.k3real = k3real.copy()
+        Scat.e2=prad.omega(pSH, k2real)[0][Scat.lk2]
+        Scat.e3=prad.omega(pSH, k3real)[0][Scat.lk3]
+        #k2real = np.array((0.0,0.0,0.0))
+        if Log1 is None:
+            print('Ahtung: scattering is not there!')
+            print(dEv(Scat.k2corners[0]), dEv(Scat.k2corners[1]), dEv(Scat.k2corners[2]), dEv(Scat.k2corners[3]), dEv(Scat.k2corners[4]),   dEv(Scat.k2corners[5]),dEv(Scat.k2corners[6]), dEv(Scat.k2corners[7]))
+        else:
+            Log1.Twrite('!!!! Problem with E-conservation : dE = ' + str(Eproblem))
     return Exist, k2real
 
 
@@ -454,10 +467,11 @@ def Sets4MLists3D(Kgr_in, SH, pSH, lam0, lam1,  ek0, g_rcell=np.array((0,0,0)), 
 
 
 #------------- finds a real value for k2 of the scattering event (3D version) -----------------
-def findCenter3D(Scat, pSH):
+def findCenter3D(Scat, pSH, Log1=None):
     r"""
     finds the values of k2/k3 fulfilling the energy-conservation law
     3D version
+    Log1 : log to write warnings
     """ 
 
     roles = Scat.roles
@@ -501,9 +515,20 @@ def findCenter3D(Scat, pSH):
         Scat.e2=prad.omega(pSH, k2real)[0][Scat.lk2]
         Scat.e3=prad.omega(pSH, k3real)[0][Scat.lk3]
     else:
-        k2real = np.array((0.0,0.0,0.0))
-        print('Ahtung: scattering is not there!')
-        print(dEv(Scat.k2corners[0]), dEv(Scat.k2corners[1]), dEv(Scat.k2corners[2]), dEv(Scat.k2corners[3]), dEv(Scat.k2corners[4]), dEv(Scat.k2corners[5]),dEv(Scat.k2corners[6]), dEv(Scat.k2corners[7]))
+        Eproblem = dEv(k2real)
+        k3real = roles[3]*(gph - roles[0]*k0 - roles[1]*k1  -  roles[2]*k2real)
+        Scat.Exist = 1
+        Scat.k2real = k2real.copy()
+        Scat.k3real = k3real.copy()
+        Scat.e2=prad.omega(pSH, k2real)[0][Scat.lk2]
+        Scat.e3=prad.omega(pSH, k3real)[0][Scat.lk3]
+        #k2real = np.array((0.0,0.0,0.0))
+        if Log1 is None:
+            print('Ahtung: scattering is not there!')
+            print(dEv(Scat.k2corners[0]), dEv(Scat.k2corners[1]), dEv(Scat.k2corners[2]), dEv(Scat.k2corners[3]), dEv(Scat.k2corners[4]),  dEv(Scat.k2corners[5]),dEv(Scat.k2corners[6]), dEv(Scat.k2corners[7]))
+        else:
+            Log1.Twrite('!!!! Problem with E-conservation : dE = ' + str(Eproblem))
+            
     return Exist, k2real
 
 

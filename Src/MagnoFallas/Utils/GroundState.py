@@ -58,7 +58,7 @@ def randomNormalDirection(vec1):
     Generates some direction, which is perpendicular to vec1
     """
     evec1 = vec1/np.linalg.norm(vec1)
-    if np.abs((evec1@ut2.ez)) == 1:
+    if np.abs(1 - np.abs((evec1@ut2.ez)))<ut2.Global_zero**2:
         return(ut2.ex)
     else:
         v1 = np.cross(evec1, ut2.ez)
@@ -72,24 +72,24 @@ def vecs_to_RM(vec1, vec2):
     """
     evec1 = vec1/np.linalg.norm(vec1)
     evec2 = vec2/np.linalg.norm(vec2)
-    if (evec1@evec2) == 1:
-        return(np.eye(3))
-    elif (evec1@evec2) == -1:
-        erot = randomNormalDirection(evec1)
-        angle = np.pi
-        rv = angle*erot
-        R = sp.spatial.transform.Rotation.from_rotvec(rv)
-        M = R.as_matrix()
-        return M
-    else:
-        rv = np.cross(evec1, evec2)
-        arv = np.linalg.norm(rv)
-        erot = rv/arv
-        angle = np.arcsin(arv)
+    Vcross = np.cross(evec1, evec2)
+    aVcross = np.linalg.norm(Vcross)
+    if aVcross > ut2.Global_zero:
+        erot = Vcross/aVcross
+        angle = np.arcsin(aVcross)
         if vec1@vec2<0:
             angle = np.pi-angle
         rv2 = erot*angle
         R = sp.spatial.transform.Rotation.from_rotvec(rv2)
+        M = R.as_matrix()
+        return M
+    elif (evec1@evec2) > 0:
+        return(np.eye(3))
+    else:
+        erot = randomNormalDirection(evec1)
+        angle = np.pi
+        rv = angle*erot
+        R = sp.spatial.transform.Rotation.from_rotvec(rv)
         M = R.as_matrix()
         return M
 
@@ -99,7 +99,37 @@ def checkNotations(SH):
     return good
     
 
-def TotalEnergy(SH0, evec=None, LR=False, R0 = -1.0, dim=2, gStrategy="2", gClust=None, gValues=None):
+def TotalEnergy(SH, spins=None, simple=True, LR=False, R0 = -1.0, dim=2, gStrategy="2", gClust=None, gValues=None ):
+    r"""
+    Calculates the total energy of the spin Hamiltonian (SH) with some arbitrary direction of spins.
+    Two versions are possible:
+    simple = True -> only the general direction for spins is set in spins. It will be trated as the direction of the 
+            subblattice of the first magnetic atoms
+    simple = False -> all spin vectors must be set manually
+
+    other parameters: 
+    
+    LR - allows LRDD, requires:
+            R0 > 0 - cutoff distance
+            dim=2 - LRDD contribution to the total energy is zero in 3D samples with spherical symmetry
+    Note: SRDD shopuld be already included into SH0
+    
+    --- used only when LR=True ---
+    gStrategy --- strategy for calculating g-factors, should be one of:
+        "2" - all g-factors equal 2 (probably due to weak SOC)
+        "Magn" - g-factors are calculated from Magnetization values in TB2J
+        "Cluster" - also from TB2J, but each spin is associated with a cluster of atoms, the "maps" of the clausters should be provided
+                     in gClust
+        "Values" - user-provided values of g-factors. Must be in gValues 
+    """
+    if simple:
+        return TotalEnergySimple(SH, evec=spins, LR=LR, R0 = R0, dim=dim, gStrategy=gStrategy, gClust=gClust, gValues=gValues)
+    else:
+        return TotalEnergyAllS(SH, spins, LR=LR, R0 = R0, dim=dim, gStrategy=gStrategy, gClust=gClust, gValues=gValues)
+    
+
+
+def TotalEnergySimple(SH0, evec=None, LR=False, R0 = -1.0, dim=2, gStrategy="2", gClust=None, gValues=None):
     r"""
     Calculates the total energy of the spin Hamiltonian (SH0) when rotating the spins so that subblatics of the first spin becomes 
     polarized along evec
@@ -159,6 +189,70 @@ def TotalEnergy(SH0, evec=None, LR=False, R0 = -1.0, dim=2, gStrategy="2", gClus
     TotEn *= -1
     return TotEn
     
+
+
+def TotalEnergyAllS(SH0, allspinvec, LR=False, R0 = -1.0, dim=2, gStrategy="2", gClust=None, gValues=None):
+    r"""
+    Calculates the total energy of the spin Hamiltonian (SH0) with arbitrary spin vecotrs defined in allspinvec
+
+    LR - allows LRDD, requires:
+            R0 > 0 - cutoff distance
+            dim=2 - LRDD contribution to the total energy is zero in 3D samples with spherical symmetry
+    Note: SRDD shopuld be already included into SH0
+    
+    --- used only when LR=True ---
+    gStrategy --- strategy for calculating g-factors, should be one of:
+        "2" - all g-factors equal 2 (probably due to weak SOC)
+        "Magn" - g-factors are calculated from Magnetization values in TB2J
+        "Cluster" - also from TB2J, but each spin is associated with a cluster of atoms, the "maps" of the clausters should be provided
+                     in gClust
+        "Values" - user-provided values of g-factors. Must be in gValues 
+    """
+    if checkNotations(SH0):
+        SH = SH0
+    else:
+        SH = ut2.cloneSH(SH0)
+        SH.notation = (True, False, -1.0)
+
+    TotEn = 0.0
+
+    atDi = {}
+    for iat, at in enumerate(SH.magnetic_atoms):
+        atDi[at.name] = iat
+
+    for at1,at2, v, Jrad in SH:
+        #print(at1, at2, v)
+        iat1 = atDi[at1.name]
+        iat2 = atDi[at2.name]
+        sv1 = allspinvec[iat1]
+        sv2 = allspinvec[iat2]
+        Jmat = Jrad.matrix
+        TotEn += sv1 @ (Jmat@sv2)
+
+    if (LR) and (dim==2) and (R0>0):
+        Nat = len(SH.magnetic_atoms)
+        ## note: at dim=3, Long range part is always zero
+        gFactors = dd.get_gFactors(SH, gStrategy=gStrategy, gClust=gClust, gValues=gValues) 
+        LRmat0 = np.real(dd.longrangeDDmatr(np.zeros(3), R0, 2, g1=2, g2=2))
+        Scell = ut2.cellVolume(SH.cell, regime2D=True)
+        for iat1, at1 in enumerate(SH.magnetic_atoms):
+            for iat2, at2 in enumerate(SH.magnetic_atoms):
+                sv1 = allspinvec[iat1]
+                sv2 = allspinvec[iat2]
+                ee1 = sv1 @ (LRmat0@sv2)
+                ee1 /= Scell
+                ee1 /= 2
+                ee1 *=   gFactors[iat1]*gFactors[iat2]/4
+                TotEn += ee1
+
+    TotEn *= -1
+    return TotEn
+
+
+
+
+
+
 
 
 
@@ -227,4 +321,98 @@ def SOCEnergy(SH, DirList = DirectionList1, file=None, Show = True, dirRef=ut2.e
     return Elist
 
 
+
+
+###-----------------------------------------------------------------------------------------------------------
+def TotEnMinimize(SH, spins, simple=True):
+    r"""
+    Tries to minimize the total energy starting from spin directions written in "spins"
+    based on the spin Hamiltonian SH
+    !!! Note: the algorithm will stuck in meta-stable and saddle configuration, in particular no energy extremumus would be optimized !!!
+    
+    two vestions: 
+    simple=True  --> spins: single direction related to the 1-st sub-lattice
+    simple=False --> spins: all vectors of all the magnetic atoms (in the corresponding order)
+    """
+    if simple:
+        return TotEnMinimizeSimple(SH, spins)
+    else:
+        return TotEnMinimizeFull(SH, spins)
+
+
+###----------------------------------------------------------------------------------------------------------
+def TotEnMinimizeSimple(SH, spin0):
+
+    espin = np.asarray(spin0)
+    espin /= np.linalg.norm(espin)
+
+    En0 = TotalEnergy(SH, espin, simple=True)
+    phi0 = np.arctan2(espin[1], espin[0])
+    tet0 = np.arccos(espin[2])
+    angles0 = np.array( (phi0, tet0) )
+
+    bndsD = np.zeros(2)
+    bndsU = np.array((np.pi, 2*np.pi))
+    bnds = [(bndsD[i], bndsU[i]) for i in range(2)]
+    
+    def minfuu(angles):
+        phi, tet = angles
+        ev = np.array((np.cos(phi)*np.sin(tet), np.sin(phi)*np.sin(tet), np.cos(tet) ))
+        En = TotalEnergy(SH, ev, simple=True)
+        return En - En0
+
+    opt1 = sp.optimize.minimize(minfuu, angles0, bounds=bnds, method='L-BFGS-B')
+    angles1 = opt1['x']
+    phi, tet = angles1
+    evec1 = np.array((np.cos(phi)*np.sin(tet), np.sin(phi)*np.sin(tet), np.cos(tet) ))
+    Etot = TotalEnergy(SH, evec1, simple=True)
+    return evec1, Etot 
+
+
+def TotEnMinimizeFull(SH, spins0):
+
+    spins1 = np.asarray(spins0)
+    Ns = len(spins1)
+
+    En0 = TotalEnergy(SH, spins0, simple=False)
+    
+    AS = np.array([np.linalg.norm(sp) for sp in spins1])
+    
+    phis0 = []
+    tet0 = []
+    for isp,spi in enumerate(spins1):
+        spN = spi/AS[isp]
+        phi = np.arctan2(spN[1], spN[0])
+        tet = np.arccos(spN[2])
+        phis0.append(phi)
+        tet0.append(tet)
+    angles0 = np.array(phis0+tet0)
+
+    bndsD = np.zeros(2*Ns)
+    bndsU = np.zeros(2*Ns) + np.pi
+    for i in range(Ns):
+        bndsU[i] += np.pi
+    bnds = [(bndsD[i], bndsU[i]) for i in range(2*Ns)]
+    
+    def angles2spins(angles):
+        phis = angles[:Ns]
+        tets = angles[Ns:]
+        spinsA = np.array([ (AS[i]*np.cos(phis[i])*np.sin(tets[i]),
+                             AS[i]*np.sin(phis[i])*np.sin(tets[i]),
+                                                    AS[i]*np.cos(tets[i])) for i in range(Ns) ])
+        return spinsA 
+    
+    
+    def minfuu(angles):
+        spins2 = angles2spins(angles)
+        En = TotalEnergy(SH, spins2, simple=False)
+        return En - En0
+
+    opt1 = sp.optimize.minimize(minfuu, angles0, bounds=bnds, method='L-BFGS-B')
+    ang1 = opt1['x']
+    spinsF = angles2spins(ang1)
+    Etot = TotalEnergy(SH, spinsF, simple=False)
+    return spinsF, Etot 
+
+###----------------------------------------------------------------------------------------------------------
 

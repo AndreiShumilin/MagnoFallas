@@ -45,6 +45,8 @@ from .Utils.DipoleDipole import AddSRDD
 #--------------------------------------------------------
 from .Utils.GroundState import ShapeEnergy
 from .Utils.GroundState import SOCEnergy
+from .Utils.GroundState import TotalEnergy
+from .Utils.GroundState import TotEnMinimize
 #--------------------------------------------------------
 
 #-------------------------------------------------------
@@ -65,6 +67,7 @@ from .OldRadtools import MagnonDispersion
 from .Interface.PseudoRad  import make_pSH2 as NBhamiltonian
 from .Interface.PseudoRad  import omega0 as NBomega
 from .Interface.PseudoRad  import omega as NBomegaFull
+
 #-------------------------------------------------------
 
 from .Boltzmann.process4M.boltzman4M import Boltzman_alpha as damping4M

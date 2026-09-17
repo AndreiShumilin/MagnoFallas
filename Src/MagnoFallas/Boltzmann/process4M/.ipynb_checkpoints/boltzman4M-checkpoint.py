@@ -256,9 +256,9 @@ class Boltzman_alpha:
             Nlst1 = len(lst)
             for sc in lst:
                 if self.dim==2:
-                    slist.findCenter2D(sc, self.pSH)
+                    slist.findCenter2D(sc, self.pSH, Log1=self.Log)
                 else:
-                    slist.findCenter3D(sc, self.pSH)
+                    slist.findCenter3D(sc, self.pSH, Log1=self.Log)
                 slist.findDeltaInt(sc, self.pSH)
             if self.LR:
                 kin.InitiateMel_List(lst, self.pSH, self.SHlines, self.pos, LR=self.LR, LRlines=self.LRlines)

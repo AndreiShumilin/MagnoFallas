@@ -60,14 +60,14 @@ def KGrid(Nkx, Nky, Nkz,  cell, rKXmax=1, rKYmax=1, rKZmax=1, regime2D=True):
         Sa = np.sqrt(np.sum(a12*a12))
         b12 = np.cross(b1,b2)
         Sb = np.sqrt(np.sum(b12*b12))
-        gK = Sa*Sb/(4*np.pi*np.pi*Nkx*Nky)
+        gK = Sa*Sb/(4*np.pi*np.pi*(Nkx-1)*(Nky-1) )
         gK *= rKXmax*rKYmax
     else:
         a12 = np.cross(a1,a2)
         Va = np.dot(a12,a3)
         b12 = np.cross(b1,b2)
         Vb = np.dot(b3,b12)
-        gK = (Va*Vb)/((2*np.pi)**3 *Nkx *Nky *Nkz)
+        gK = (Va*Vb)/((2*np.pi)**3 *(Nkx-1) *(Nky-1) *(Nkz-1) )
         gK *= rKXmax*rKYmax*rKZmax
     return Kgrid1, gK
 
