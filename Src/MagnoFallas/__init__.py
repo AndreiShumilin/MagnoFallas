@@ -49,6 +49,11 @@ from .Utils.GroundState import TotalEnergy
 from .Utils.GroundState import TotEnMinimize
 #--------------------------------------------------------
 
+#--------------------------------------------------------
+from .Utils.MagnonAnalysis import Chiralities
+from .Utils.MagnonAnalysis import ChiralBandPlot
+#--------------------------------------------------------
+
 #-------------------------------------------------------
 from .Models.ToyFM import ToyModel as ToyModelFM
 from .Models.ToyAFM import ToyModelAFM as ToyModelAFM
