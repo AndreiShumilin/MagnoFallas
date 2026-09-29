@@ -64,6 +64,21 @@ def Chiralities(SH, Magn, kv, NB=False):
 
 
 def ChiralBandPlot(SH, Magn, kpoi, xx=None, Xmarks=None, labels=None, cmap=None, NB=False, toPlot=False, size=0.25, saveFile=None, colorbar=False):
+    r"""
+    Automatic tool to make chiral-resolved plots of the bands
+    returns the information required for plot and can make the plot itself with toPlot=True
+    
+    SH - spin Hamiltonian
+    Magn - Magnon-dispesion (if NB=True) of "numba-compatible spin Hamiltonian" (with NB=False)
+    kpoi - set of k-points
+    xx, Xmarks, labels - standard information for band-plots (output of util2.Kpath)
+    cmap - colormap (for plot)
+    NB - if numba-compatible methods should be used
+    toPlot - if the plot should be made
+    size - size of a point for the plot
+    saveFile - can save the plot to a file
+    colorbar - True will add colorbar to the plot
+    """
     
     Nat = len(SH.magnetic_atoms)
     res = []
