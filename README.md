@@ -31,7 +31,13 @@ Currently, the code should be used as a Python library. The **Tutorials** sectio
 ### Physical background
 
 
-The pysical background can be found in *Archive*
+The pysical background can be found in arxiv:
+
+https://arxiv.org/abs/2602.21885
+
+and in Physical Review B:
+
+https://doi.org/10.1103/1dxw-gbgb
 
 
 ### Dependencies
