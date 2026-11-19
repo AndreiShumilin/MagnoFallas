@@ -98,15 +98,6 @@ def formLists(SH0, pos, disMax = 5):
 
 
 
-
-
-
-
-
-
-
-
-
 def Estimate_bonds_dist_Hamiltonians(l_i1, l_i2, l_cvecJ, SH0, pos0, SHlist, Poslist, 
                                      mag_correspond_list, lst=None, PCCmin=0.45):
     ###    l_i1, l_i2, l_cvecJ : lists describing bonds to study i1,i2 - numbers in magnetic_atoms, cvec - distance in unit cells

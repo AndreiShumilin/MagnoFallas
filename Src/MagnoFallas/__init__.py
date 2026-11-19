@@ -39,6 +39,7 @@ from .Utils.util2 import groupV
 from .Utils.util2 import groupV_P as groupV_NB
 from .Utils.util2 import rolesDict as roles
 from .Utils.util2 import GetRealPositions
+from .Utils.util2 import MagnInfoText
 from .Utils.DipoleDipole import AddSRDD
 #--------------------------------------------------------
 

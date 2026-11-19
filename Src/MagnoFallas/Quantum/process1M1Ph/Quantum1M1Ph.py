@@ -201,7 +201,7 @@ def JointHamiltonian(k, pSH, Ephon, lines1M1Ph, pos):
     Nphon = Ephon.Nband
     ePHmev, PsiPhfull = Ephon.fullSolve(-k)
     for i in range(3):
-        ePHmev[i] = Ephon.energy(-k,i)   #### to get the sound-velocity based correstions
+        ePHmev[i] = Ephon.energy(-k,i)   #### to get the sound-velocity based corrections
 
     Nj = nMagn + Nphon
     Hjoint = np.zeros((Nj,Nj), dtype=np.complex128)

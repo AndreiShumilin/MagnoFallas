@@ -29,3 +29,5 @@ from .SPhUtil import relate_TB2J_Phonopy
 from .StrategyDistance import Estimate_auto_dist
 
 from .StrategyDipDip import Estimate_auto_dipole
+
+from .StrategyStrain2D import Estimate_from_2D_strain

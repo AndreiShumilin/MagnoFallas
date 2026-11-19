@@ -54,7 +54,7 @@ def SHreadTB2J(str, sp0=3/2):
 
 ##-------------------------------------------------------------------------------------------------------
 
-def lookForAtom(SH, rco, prec=1e-3):
+def lookForAtom(SH, rco, prec=1e-3, allAtoms=False):
     r"""
     tries to find an atom in spin Hamiltoniam "SH" (atoms)
     based on its Cartesian coordinates "rco"
@@ -70,15 +70,21 @@ def lookForAtom(SH, rco, prec=1e-3):
     return found, name
 
 
-def lookForMagAtom(SH, rco, prec=1e-3):
+def lookForMagAtom(SH, rco, prec=1e-3, allAtoms=False):
     r"""
     tries to find an atom in spin Hamiltoniam "SH" (magnetic_atoms)
     based on its Cartesian coordinates "rco"
     prec - the precision
     """
+    # if allAtoms:
+    #     AtomList = SH0.atoms
+    # else:
+    #     AtomList = SH0.magnetic_atoms
+
+    
     found = False
     name = ''
-    for at in SH.magnetic_atoms:
+    for at in SH0.magnetic_atoms:
         rc1 = ut2.realposition2(at.position, SH.cell) 
         if ut2.EqualVectors(rc1, rco, prec=prec):
             found = True
@@ -91,7 +97,7 @@ def lookForMagAtom(SH, rco, prec=1e-3):
 
 
 def project(SH0, a1,a2, a3=np.zeros(3), dim=2, zeroShift=np.zeros(3), MaxN = 3, MaxNz=-1, prec=1e-1,
-           relPrecision = 0.02, absPrecision=0.03, quite=False, returnMap=False):
+           relPrecision = 0.02, absPrecision=0.03, quite=False, returnMap=False, allAtoms=False):
     r"""
     projects the spin Hamiltonian "SH0" to the new unit cell defined by the unit vectors "a1", "a2", "a3" 
     (in Cratesian coordinates corresponding to SH0)
@@ -101,7 +107,14 @@ def project(SH0, a1,a2, a3=np.zeros(3), dim=2, zeroShift=np.zeros(3), MaxN = 3, 
     relPrecision, absPrecision --- relative and absolute precision for exchange interactions
     quite --- wether to print erroe warnings
     returnMap --- wether to return the mapping between spin Hamiltonians
+
+    allAtoms - if True, all atoms are considered; False - only magnetic atoms
     """
+
+    if allAtoms:
+        AtomList = SH0.atoms
+    else:
+        AtomList = SH0.magnetic_atoms
 
     def compareJ(J1, J2):
         good = True
@@ -133,7 +146,7 @@ def project(SH0, a1,a2, a3=np.zeros(3), dim=2, zeroShift=np.zeros(3), MaxN = 3, 
     SHp.notation = SH0.notation
 
     zCo0 = SH0.magnetic_atoms[0].position + zeroShift
-    for iat, at in enumerate(SH0.magnetic_atoms):
+    for iat, at in enumerate(AtomList):
         co0 = ut2.realposition2(at.position, SH0.cell)  + ut2.Global_zero + zeroShift
         for idx in range(-lNx, lNx+1):
             for idy in range(-lNy, lNy+1):
@@ -150,9 +163,16 @@ def project(SH0, a1,a2, a3=np.zeros(3), dim=2, zeroShift=np.zeros(3), MaxN = 3, 
                         else:
                             ats[type] = 1
                         newname = type + str(ats[type])
-                        svec= at.spin_vector
+                    
+                        if  at._spin is None:                        
+                            svec = None
+                        else:
+                            svec= at.spin_vector
                         newpos = ut2.RelativePosition(pcell, co2)
-                        newAt = rad.Atom(newname, spin=svec, position=newpos)
+                        if  at._spin is None:         
+                            newAt = rad.Atom(newname, position=newpos)
+                        else:
+                            newAt = rad.Atom(newname, spin=svec, position=newpos)
                         SHp.add_atom(newAt)
                         map[(at.name, (idx, idy,idz))] = (newname, dv)
 
@@ -188,13 +208,15 @@ def project(SH0, a1,a2, a3=np.zeros(3), dim=2, zeroShift=np.zeros(3), MaxN = 3, 
 
 ##-------------------------------------------------------------------------------------------------------
 
-def rotateSH(SH0, basis):
+def rotateSH(SH0, basis, allAtoms=False):
     r"""
     rotates spin Hamiltonian in physical space, bringing it to the new basis (new x,y and z axes)
     SH0 - old spin Hamiltonain
     basis - 3x3 array of axes (ex,ey,ez) must be orthonormal vectors
     Comment: because all the information in Spin Hamiltonian is in relative units, only changes the unit cell
     of spin Hamiltonian
+
+    allAtoms - if True, all atoms are considered; False - only magnetic atoms
     """
     ex1 = basis[0]
     ey1 = basis[1]
@@ -203,7 +225,7 @@ def rotateSH(SH0, basis):
     a2 = np.array([ SH0.a2 @ ex1,  SH0.a2 @ ey1, SH0.a2 @ ez1  ])
     a3 = np.array([ SH0.a3 @ ex1,  SH0.a3 @ ey1, SH0.a3 @ ez1  ])
     cell1 = np.array((a1,a2,a3))
-    SH = ut2.cloneSH(SH0, cell1)
+    SH = ut2.cloneSH(SH0, cell1, allAtoms=allAtoms)
     return SH
 
 

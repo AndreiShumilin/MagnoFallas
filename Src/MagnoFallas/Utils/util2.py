@@ -415,26 +415,75 @@ def formLists(SH0, pos, disMax = 5):
 
 
 
-def cloneSH(SH0, cell1=None, Multiply=None):
+def cloneSH(SH0, cell1=None, Multiply=None, allAtoms=False):
     r"""
     clones spin Hamiltonian, possibly with new cell (cell1)
     also can multiply all exchange interactions by Factor Multiply
     uses standardize=False to prevent spontaneous rotations
+
+    allAtoms - if True, all atoms are considered; False - only magnetic atoms
     """
     if cell1 is None:
         cell1 = SH0.cell.copy()
     if Multiply is None:
         Multiply = 1.0
+    if allAtoms:
+        AtomList = SH0.atoms
+    else:
+        AtomList = SH0.magnetic_atoms
 
     SH = rad.SpinHamiltonian(cell=cell1, standardize=False)
     SH.notation = SH0.notation
-    
-    for at in SH0.magnetic_atoms:
+
+ 
+    for at in AtomList:
         at1 = copy.deepcopy(at)
         SH.add_atom(at1)
+
 
     for at1,at2,cvec, J in SH0:
         Jmat = J.matrix*Multiply
         Jnew = rad.ExchangeParameter(matrix=Jmat)
         SH[at1.name, at2.name,cvec] = Jnew
     return SH
+
+
+
+
+##-------------------------------------------------------------------------------------------------------
+
+def MagnInfoText(Magn, k, Nb, tfoo=print, add=None, numb=False):
+    r"""
+    The procedure is made to explain the structure of anihilation operators of magnon bands
+    Magn - Magnon dispersion/ Numba-compatible spin Hamiltonian (depending on value numb)
+    k - wavevector
+    Nb - number of the magnon band to analize
+
+    tfoo - function to use for printing data (by default: print)
+    add - addition to each line of text (by default uses '\n' if tfoo is not print )
+
+    numb - wether to use numba-compatible methods
+    """
+    
+    if add is None:
+        if tfoo==print:
+            add = ''
+    else:
+        add = '\n'
+        
+    if numb: 
+        oms, G, Gi = prad.omega(Magn, k)
+    else:
+        oms, G = Magn.omega(k, return_G=True)
+    tfoo('Analizing band ' + str(Nb) + ' :' + add)
+    tfoo('k-vector: ' + str(k) + add)
+    Nat = len(oms)//2
+    tfoo('decomposition of s over b/b^+ :' + add)
+    for i in range(Nat):
+        ia1 = i
+        ia2 = i+Nat
+        g1 = G[Nb, ia1]
+        g2 = G[Nb, ia2]
+        s1 = 'atom '+str(i) + ' :'
+        s1 = s1 + str(g1) + ' / ' + str(g2) + add
+        tfoo(s1)
