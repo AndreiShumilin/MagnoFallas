@@ -42,13 +42,22 @@ class EXTphonopy:
 
     It is important for the calculations that no negative phonon are present even near Gamma-point. 
     """
-    def __init__(self, phonon, Adj_ecut=0.5, name_map=None):
+    def __init__(self, phonon, Adj_ecut=0.1, name_map=None):
         self.phon0 = phonon
         self.Nat = len(phonon.primitive.symbols)
         self.Nband = 3*len(phonon.primitive.symbols)
         self.c = np.zeros((self.Nband, 3))
-        self.Adj_ecut = Adj_ecut      #### maximum energy for the adjustments of acoustic phonons
         self.NAcc = 3       ## number of acoustic bands
+
+        cutDim = len(np.asarray(Adj_ecut).shape)
+
+        if cutDim == 0:
+            self.Adj_ecut = Adj_ecut * np.ones(self.NAcc)
+        else:
+            self.Adj_ecut = Adj_ecut      #### maximum energy for the adjustments of acoustic phonons
+            
+        
+        
         self.cell = self.phon0.primitive.cell
         
         self.a1 = self.cell[0,...]
@@ -92,20 +101,48 @@ class EXTphonopy:
         estimates the sound velocities. Requires reference absolute value of Q, corresponding to good linear dispersion in all directions
         is real shows that aQref0 is in 1/A instead of phonopy notations
         """
-
+        ref_dim = len(np.asarray(aQref).shape)
+        if ref_dim == 0:
+            mQref = aQref*np.ones((3,3))
+        elif ref_dim == 1:
+            mQref = np.kron(np.ones(3), aQref).reshape(3,3)
+        else:
+            mQref = np.asarray(aQref)
+        
         ee = np.eye(3)
         for ib in range(self.NAcc):
             for ie in range(3):
-                q0 = aQref*ee[ie]
+                aQ = mQref[ib, ie]
+                q0 = aQ*ee[ie]
                 if isreal:
                     q = self.InternalQ(q0)
                     aQref2 = np.linalg.norm(q)
                 else:
                     q = q0
-                    aQref2 = aQref
+                    aQref2 = aQ
                 en = self.energy(q, ib, cmin=0.0, isreal=False )
                 self.c[ib,ie] = en/aQref2
         
+    
+    def correctE(self, e0, q1, qBra, cmin=None):
+        r"""
+        Note q1 - relative coordinates
+        """
+        if qBra >= self.NAcc:
+            return e0
+        
+        if cmin is None:
+            cmin = self.getC(self.c[qBra], q1)
+        aq = np.sqrt(np.abs(np.sum( q1*q1 )))
+            
+        if ((e0<aq*cmin) and (e0<self.Adj_ecut[qBra])):
+            return cmin*aq
+        else:
+            return e0
+
+        
+        
+    
     def energy(self, qinp, qBra, cmin=None, isreal=True ):
         r"""
         calculate phonon energy with wavevector qinp and branch qBra
@@ -134,11 +171,13 @@ class EXTphonopy:
         e1 = emev[qBra]
     
         aq = np.sqrt(np.abs(np.sum( q1*q1 )))
-    
-        if ((e1<aq*cmin) and (e1<self.Adj_ecut)):
-            e1 = cmin*aq
+
+
+        # if ((e1<aq*cmin) and (e1<self.Adj_ecut[qBra])):
+        #     e1 = cmin*aq
+        e2 = self.correctE(e1, q1, qBra, cmin=cmin)
             
-        return e1  
+        return e2  
 
     def energies_all(self, qinp, cmins=None, isreal=True ):
         r"""
@@ -168,12 +207,10 @@ class EXTphonopy:
         emev = oms*conv_phonopy_meV
 
         aq = np.sqrt(np.abs(np.sum( q1*q1 )))
-        for qBra in range(3):
+        for qBra in range(self.NAcc):
             e1 = emev[qBra]
-            cmin = cmins[qBra]
-            if ((e1<aq*cmin) and (e1<self.Adj_ecut)):
-                e1 = cmin*aq
-            emev[qBra] = e1
+            e2 = self.correctE(e1, q1, qBra, cmin=cmins[qBra])
+            emev[qBra] = e2
         return emev
 
     
@@ -199,7 +236,13 @@ class EXTphonopy:
         return Psi[qBra]
 
 
-    def fullSolve(self, qinp, isreal=True):
+    def fullSolve(self, qinp, isreal=True, make_corrections=False):
+        r"""
+        gives complete (energies+vectors) solution of the phonon system
+        qinp - q-vecotr
+        isreal - True: real coordinates (1/A) for q; False: relative coordinates
+        make_corrections - if True: will make corrections to the phonon energies based on the estimated sound velocities
+        """
         if isreal:     ### Note: q should be in phonopy notations
             q = self.InternalQ(qinp)
         else:
@@ -211,6 +254,12 @@ class EXTphonopy:
         Aoms0 = np.sqrt(np.abs(eig0))
         oms = Aoms0 * np.sign(eig0)
         emev = oms*conv_phonopy_meV
+
+        if make_corrections:
+            for qBra in range(self.NAcc):
+                e1 = emev[qBra]
+                e2 = self.correctE(e1, q1, qBra)
+                emev[qBra] = e2
         
         Psi = np.transpose(Wf).reshape((self.Nband,self.Nat,3))
         return emev, Psi

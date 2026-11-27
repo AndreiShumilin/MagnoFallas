@@ -193,15 +193,15 @@ def Wmel_sP_b(lines1M1P, k, lam, Gmin1, ph_EdAll, ph_masses, ePh):
 
 
 
-def JointHamiltonian(k, pSH, Ephon, lines1M1Ph, pos):
+def JointHamiltonian(k, pSH, Ephon, lines1M1Ph, pos, make_corrections=True):
     o1,G1,Gi1_0 = prad.omega(pSH, k)
     Gi1 = ut2.ModGi(Gi1_0, k, pos)[0]
     nMagn = len(o1)//2
 
     Nphon = Ephon.Nband
-    ePHmev, PsiPhfull = Ephon.fullSolve(-k)
-    for i in range(3):
-        ePHmev[i] = Ephon.energy(-k,i)   #### to get the sound-velocity based corrections
+    ePHmev, PsiPhfull = Ephon.fullSolve(-k, make_corrections=make_corrections)
+    # for i in range(3):
+    #     ePHmev[i] = Ephon.energy(-k,i)   #### to get the sound-velocity based corrections
 
     Nj = nMagn + Nphon
     Hjoint = np.zeros((Nj,Nj), dtype=np.complex128)
